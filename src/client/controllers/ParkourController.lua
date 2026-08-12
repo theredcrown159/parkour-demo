@@ -4,17 +4,17 @@ ParkourController.__index = ParkourController
 function ParkourController.new()
 	local self = setmetatable({}, ParkourController)
 
-	self.state = "Normal"
+	self.state = "Walking"
 
 	return self
 end
 
 function ParkourController:CanTransitionTo(newState)
-	if self.state == "Normal" and newState == "Sprinting" then
+	if self.state == "Walking" and newState == "Sprinting" then
 		return true
-	elseif self.state == "Sprinting" and (newState == "Normal" or newState == "Sliding") then
+	elseif self.state == "Sprinting" and (newState == "Walking" or newState == "Sliding") then
 		return true
-	elseif self.state == "Sliding" and (newState == "Normal" or newState == "Sprinting") then
+	elseif self.state == "Sliding" and (newState == "Walking" or newState == "Sprinting") then
 		return true
 	else
 		return false
@@ -30,5 +30,7 @@ function ParkourController:TransitionTo(state)
 
 	return true
 end
+
+function ParkourController:Start() end
 
 return ParkourController
