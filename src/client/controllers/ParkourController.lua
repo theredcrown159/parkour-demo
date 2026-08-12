@@ -1,3 +1,7 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local ParkourConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("ParkourConfig"))
+
 local ParkourController = {}
 ParkourController.__index = ParkourController
 
@@ -5,8 +9,12 @@ function ParkourController.new()
 	local self = setmetatable({}, ParkourController)
 
 	self.state = "Walking"
+
 	self.player = game.Players.LocalPlayer
-	self.conennctions = {}
+	self.character = nil
+	self.humanoid = nil
+
+	self.connections = {}
 
 	return self
 end
@@ -29,8 +37,17 @@ function ParkourController:TransitionTo(state)
 	end
 
 	self.state = state
+	self:ApplyState(state)
 
 	return true
+end
+
+function ParkourController:ApplyState(state)
+	if state == "Walking" then
+		self.humanoid.WalkSpeed = ParkourConfig.WalkSpeed
+	elseif state == "Sprinting" then
+		self.humanoid.WalkSpeed = ParkourConfig.SprintSpeed
+	end
 end
 
 function ParkourController:SetCharacter(character)
