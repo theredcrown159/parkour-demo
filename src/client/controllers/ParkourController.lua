@@ -5,6 +5,8 @@ function ParkourController.new()
 	local self = setmetatable({}, ParkourController)
 
 	self.state = "Walking"
+	self.player = game.Players.LocalPlayer
+	self.conennctions = {}
 
 	return self
 end
@@ -31,6 +33,29 @@ function ParkourController:TransitionTo(state)
 	return true
 end
 
-function ParkourController:Start() end
+function ParkourController:SetCharacter(character)
+	self.character = character
+	self.humanoid = self.character:WaitForChild("Humanoid")
+
+	self.state = "Walking"
+end
+
+function ParkourController:Start()
+	self:SetCharacter(self.player.Character or self.player.CharacterAdded:Wait())
+
+	local charaterAddedConnection = self.player.CharacterAdded:Connect(function(character)
+		self:SetCharacter(character)
+	end)
+
+	table.insert(self.connections, charaterAddedConnection)
+end
+
+function ParkourController:Destroy()
+	for _, connection in ipairs(self.connections) do
+		connection:Disconnect()
+	end
+
+	self.connections = {}
+end
 
 return ParkourController
