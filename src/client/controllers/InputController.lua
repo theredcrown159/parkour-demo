@@ -7,6 +7,7 @@ function InputController.new(parkourController)
 	self.parkourController = parkourController
 
 	self.PlayContext = game:GetService("ReplicatedStorage"):WaitForChild("Input"):WaitForChild("PlayContext")
+	self.Slide = self.PlayContext:WaitForChild("Slide")
 	self.Sprint = self.PlayContext:WaitForChild("Sprint")
 
 	self.connections = {}
@@ -15,16 +16,21 @@ function InputController.new(parkourController)
 end
 
 function InputController:Start()
-	local pressedConnection = self.Sprint.Pressed:Connect(function()
+	local pressedSlideConnection = self.Slide.Pressed:Connect(function()
+		self.parkourController:RequestSlide()
+	end)
+
+	local pressedSprintConnection = self.Sprint.Pressed:Connect(function()
 		self.parkourController:SetSprintIntent(true)
 	end)
 
-	local releasedConnection = self.Sprint.Released:Connect(function()
+	local releasedSprintConnection = self.Sprint.Released:Connect(function()
 		self.parkourController:SetSprintIntent(false)
 	end)
 
-	table.insert(self.connections, pressedConnection)
-	table.insert(self.connections, releasedConnection)
+	table.insert(self.connections, pressedSlideConnection)
+	table.insert(self.connections, pressedSprintConnection)
+	table.insert(self.connections, releasedSprintConnection)
 end
 
 function InputController:Destroy()
