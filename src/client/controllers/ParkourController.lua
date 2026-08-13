@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TouchInputService = game:GetService("TouchInputService")
 
 local ParkourConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("ParkourConfig"))
 
@@ -9,6 +10,7 @@ function ParkourController.new()
 	local self = setmetatable({}, ParkourController)
 
 	self.state = "Walking"
+	self.wantsSprint = false
 
 	self.player = game.Players.LocalPlayer
 	self.character = nil
@@ -40,6 +42,25 @@ function ParkourController:TransitionTo(state)
 	self:ApplyState(state)
 
 	return true
+end
+
+function ParkourController:SetSprintIntent(isSprinting)
+	self.wantsSprint = isSprinting
+	self:UpdateState()
+end
+
+function ParkourController:UpdateState()
+	if self.state == "Sliding" then
+		return false
+	end
+
+	if self.wantsSprint and self.state == "Walking" then
+		return self:TransitionTo("Sprinting")
+	elseif not self.wantsSprint and self.state == "Sprinting" then
+		return self:TransitionTo("Walking")
+	else
+		return false
+	end
 end
 
 function ParkourController:ApplyState(state)

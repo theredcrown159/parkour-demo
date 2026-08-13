@@ -16,11 +16,11 @@ end
 
 function InputController:Start()
 	local pressedConnection = self.Sprint.Pressed:Connect(function()
-		self.parkourController:TransitionTo("Sprinting")
+		self.parkourController:SetSprintIntent(true)
 	end)
 
 	local releasedConnection = self.Sprint.Released:Connect(function()
-		self.parkourController:TransitionTo("Walking")
+		self.parkourController:SetSprintIntent(false)
 	end)
 
 	table.insert(self.connections, pressedConnection)
