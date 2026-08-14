@@ -5,6 +5,20 @@ local ParkourConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForCh
 local States = script.Parent:WaitForChild("states")
 local SlideState = require(States:WaitForChild("Slide"))
 
+local ALLOWED_TRANSITIONS = {
+	Walking = {
+		Sprinting = true,
+	},
+	Sprinting = {
+		Walking = true,
+		Sliding = true,
+	},
+	Sliding = {
+		Walking = true,
+		Sprinting = true,
+	},
+}
+
 local ParkourController = {}
 ParkourController.__index = ParkourController
 
@@ -27,15 +41,8 @@ function ParkourController.new()
 end
 
 function ParkourController:CanTransitionTo(newState)
-	if self.state == "Walking" and newState == "Sprinting" then
-		return true
-	elseif self.state == "Sprinting" and (newState == "Walking" or newState == "Sliding") then
-		return true
-	elseif self.state == "Sliding" and (newState == "Walking" or newState == "Sprinting") then
-		return true
-	else
-		return false
-	end
+	local transitions = ALLOWED_TRANSITIONS[self.state]
+	return transitions ~= nil and transitions[newState] == true
 end
 
 function ParkourController:TransitionTo(state)
@@ -47,6 +54,28 @@ function ParkourController:TransitionTo(state)
 	self:ApplyState(state)
 
 	return true
+end
+
+function ParkourController:ApplyState(state)
+	if state == "Walking" then
+		self.humanoid.WalkSpeed = ParkourConfig.WalkSpeed
+	elseif state == "Sprinting" then
+		self.humanoid.WalkSpeed = ParkourConfig.SprintSpeed
+	end
+end
+
+function ParkourController:UpdateState()
+	if self.state == "Sliding" then
+		return false
+	end
+
+	if self.wantsSprint and self.state == "Walking" then
+		return self:TransitionTo("Sprinting")
+	elseif not self.wantsSprint and self.state == "Sprinting" then
+		return self:TransitionTo("Walking")
+	else
+		return false
+	end
 end
 
 function ParkourController:SetSprintIntent(isSprinting)
@@ -71,28 +100,6 @@ function ParkourController:RequestSlide()
 	slide:Start()
 
 	return true
-end
-
-function ParkourController:UpdateState()
-	if self.state == "Sliding" then
-		return false
-	end
-
-	if self.wantsSprint and self.state == "Walking" then
-		return self:TransitionTo("Sprinting")
-	elseif not self.wantsSprint and self.state == "Sprinting" then
-		return self:TransitionTo("Walking")
-	else
-		return false
-	end
-end
-
-function ParkourController:ApplyState(state)
-	if state == "Walking" then
-		self.humanoid.WalkSpeed = ParkourConfig.WalkSpeed
-	elseif state == "Sprinting" then
-		self.humanoid.WalkSpeed = ParkourConfig.SprintSpeed
-	end
 end
 
 function ParkourController:SetCharacter(character)
