@@ -6,6 +6,7 @@ local States = script.Parent:WaitForChild("states")
 local SlidingState = require(States:WaitForChild("Sliding"))
 local WalkingState = require(States:WaitForChild("Walking"))
 local SprintingState = require(States:WaitForChild("Sprinting"))
+local VaultingState = require(States:WaitForChild("Vaulting"))
 
 local AnimationController = require(script.Parent:WaitForChild("AnimationController"))
 
@@ -91,6 +92,10 @@ function ParkourController:RequestSlide()
 	self:TransitionTo("Sliding")
 end
 
+function ParkourController:RequestVault()
+	self.states.Vaulting:Check()
+end
+
 function ParkourController:SetCharacter(character)
 	self.character = character
 	self.rootPart = self.character:WaitForChild("HumanoidRootPart")
@@ -117,6 +122,7 @@ function ParkourController:SetCharacter(character)
 				end
 			end
 		),
+		Vaulting = VaultingState.new(self.character, self.humanoid, self.rootPart, ParkourConfig),
 	}
 
 	self.state = "Walking"

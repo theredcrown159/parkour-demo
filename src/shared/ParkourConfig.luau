@@ -6,4 +6,7 @@ return {
 	SlideBoost = 40,
 	SlideDeceleration = 60,
 	MinSlideSpeed = 20,
+
+	VaultCheckDistance = 4,
+	VaultMaxHeight = 4,
 }
