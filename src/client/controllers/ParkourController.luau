@@ -3,7 +3,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ParkourConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("ParkourConfig"))
 
 local States = script.Parent:WaitForChild("states")
-local SlideState = require(States:WaitForChild("Slide"))
+local SlidingState = require(States:WaitForChild("Sliding"))
+local WalkingState = require(States:WaitForChild("Walking"))
+local SprintingState = require(States:WaitForChild("Sprinting"))
 
 local ALLOWED_TRANSITIONS = {
 	Walking = {
@@ -26,6 +28,7 @@ function ParkourController.new()
 	local self = setmetatable({}, ParkourController)
 
 	self.state = "Walking"
+	self.states = {}
 	self.wantsSprint = false
 
 	self.player = game.Players.LocalPlayer
@@ -51,17 +54,9 @@ function ParkourController:TransitionTo(state)
 	end
 
 	self.state = state
-	self:ApplyState(state)
+	self.states[state]:Enter()
 
 	return true
-end
-
-function ParkourController:ApplyState(state)
-	if state == "Walking" then
-		self.humanoid.WalkSpeed = ParkourConfig.WalkSpeed
-	elseif state == "Sprinting" then
-		self.humanoid.WalkSpeed = ParkourConfig.SprintSpeed
-	end
 end
 
 function ParkourController:UpdateState()
@@ -84,22 +79,7 @@ function ParkourController:SetSprintIntent(isSprinting)
 end
 
 function ParkourController:RequestSlide()
-	if not self:TransitionTo("Sliding") then
-		return false
-	end
-
-	local onFinished = function()
-		if self.wantsSprint then
-			self:TransitionTo("Sprinting")
-		else
-			self:TransitionTo("Walking")
-		end
-	end
-
-	local slide = SlideState.new(self.rootPart, self.humanoid, self.attachment, ParkourConfig, onFinished)
-	slide:Start()
-
-	return true
+	self:TransitionTo("Sliding")
 end
 
 function ParkourController:SetCharacter(character)
@@ -110,6 +90,18 @@ function ParkourController:SetCharacter(character)
 	self:CreateAttachment()
 
 	self.state = "Walking"
+
+	self.states = {
+		Walking = WalkingState.new(self.humanoid, ParkourConfig),
+		Sprinting = SprintingState.new(self.humanoid, ParkourConfig),
+		Sliding = SlidingState.new(self.rootPart, self.humanoid, self.attachment, ParkourConfig, function()
+			if self.wantsSprint then
+				self:TransitionTo("Sprinting")
+			else
+				self:TransitionTo("Walking")
+			end
+		end),
+	}
 end
 
 function ParkourController:CreateAttachment()
