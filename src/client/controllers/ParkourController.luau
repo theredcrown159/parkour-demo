@@ -7,7 +7,12 @@ local SlidingState = require(States:WaitForChild("Sliding"))
 local WalkingState = require(States:WaitForChild("Walking"))
 local SprintingState = require(States:WaitForChild("Sprinting"))
 
+local AnimationController = require(script.Parent:WaitForChild("AnimationController"))
+
 local ALLOWED_TRANSITIONS = {
+	None = {
+		Walking = true,
+	},
 	Walking = {
 		Sprinting = true,
 	},
@@ -27,7 +32,8 @@ ParkourController.__index = ParkourController
 function ParkourController.new()
 	local self = setmetatable({}, ParkourController)
 
-	self.state = "Walking"
+	self.lastState = "None"
+	self.state = "None"
 	self.states = {}
 	self.wantsSprint = false
 
@@ -39,6 +45,8 @@ function ParkourController.new()
 	self.attachment = nil
 
 	self.connections = {}
+
+	self.animationController = nil
 
 	return self
 end
@@ -53,6 +61,7 @@ function ParkourController:TransitionTo(state)
 		return false
 	end
 
+	self.states[self.state]:Exit()
 	self.state = state
 	self.states[state]:Enter()
 
@@ -87,21 +96,31 @@ function ParkourController:SetCharacter(character)
 	self.rootPart = self.character:WaitForChild("HumanoidRootPart")
 	self.humanoid = self.character:WaitForChild("Humanoid")
 
+	self.animationController = AnimationController.new(self.humanoid)
+
 	self:CreateAttachment()
 
-	self.state = "Walking"
-
 	self.states = {
-		Walking = WalkingState.new(self.humanoid, ParkourConfig),
-		Sprinting = SprintingState.new(self.humanoid, ParkourConfig),
-		Sliding = SlidingState.new(self.rootPart, self.humanoid, self.attachment, ParkourConfig, function()
-			if self.wantsSprint then
-				self:TransitionTo("Sprinting")
-			else
-				self:TransitionTo("Walking")
+		Walking = WalkingState.new(self.humanoid, ParkourConfig, self.animationController),
+		Sprinting = SprintingState.new(self.humanoid, ParkourConfig, self.animationController),
+		Sliding = SlidingState.new(
+			self.rootPart,
+			self.humanoid,
+			self.attachment,
+			ParkourConfig,
+			self.animationController,
+			function()
+				if self.wantsSprint then
+					self:TransitionTo("Sprinting")
+				else
+					self:TransitionTo("Walking")
+				end
 			end
-		end),
+		),
 	}
+
+	self.state = "Walking"
+	self.states.Walking:Enter()
 end
 
 function ParkourController:CreateAttachment()

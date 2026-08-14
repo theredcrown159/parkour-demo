@@ -7,7 +7,7 @@ local SlideLinearVelocity = ParkourAssets:WaitForChild("SlideLinearVelocity")
 local Sliding = {}
 Sliding.__index = Sliding
 
-function Sliding.new(rootPart, humanoid, attachment, config, onFinished)
+function Sliding.new(rootPart, humanoid, attachment, config, animationController, onFinished)
 	local self = setmetatable({}, Sliding)
 
 	self.rootPart = rootPart
@@ -26,6 +26,8 @@ function Sliding.new(rootPart, humanoid, attachment, config, onFinished)
 	self.onFinished = onFinished
 
 	self.connection = nil
+
+	self.animationController = animationController
 
 	return self
 end
@@ -61,6 +63,8 @@ function Sliding:Enter()
 	self:CreateLinearVelocity()
 	self:CalculateSlideMovement()
 
+	self.animationController:Play("Sliding", 0.08)
+
 	self.connection = RunService.PreSimulation:Connect(function(dt)
 		self:Update(dt)
 	end)
@@ -75,7 +79,8 @@ function Sliding:Update(dt)
 	self.slideSpeed = math.max(0, self.slideSpeed - self.config.SlideDeceleration * dt)
 
 	if self.elapsedTime >= self.config.SlideDuration or self.slideSpeed <= self.config.MinSlideSpeed then
-		self:Exit()
+		self.animationController:Stop("Sliding", 0.2)
+		self.onFinished()
 	end
 end
 
@@ -87,7 +92,6 @@ function Sliding:Exit()
 
 	self.linearVelocity:Destroy()
 	self.connection:Disconnect()
-	self.onFinished()
 end
 
 return Sliding
