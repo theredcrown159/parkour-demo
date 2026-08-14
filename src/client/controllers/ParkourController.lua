@@ -14,6 +14,7 @@ function ParkourController.new()
 
 	self.player = game.Players.LocalPlayer
 	self.character = nil
+	self.rootPart = nil
 	self.humanoid = nil
 
 	self.connections = {}
@@ -22,11 +23,9 @@ function ParkourController.new()
 end
 
 function ParkourController:CanTransitionTo(newState)
-	print(self.state, newState)
 	if self.state == "Walking" and newState == "Sprinting" then
 		return true
 	elseif self.state == "Sprinting" and (newState == "Walking" or newState == "Sliding") then
-		print(newState)
 		return true
 	elseif self.state == "Sliding" and (newState == "Walking" or newState == "Sprinting") then
 		return true
@@ -56,12 +55,33 @@ function ParkourController:RequestSlide()
 		return false
 	end
 
+	self:UpdateLinearVelocity()
+
 	local elapsedTime = 0
+
+	local lookVec = self.rootPart.CFrame.LookVector
+	local horizontalLookDir = Vector3.new(lookVec.X, 0, lookVec.Z).Unit
+
+	local velocity = self.rootPart.AssemblyLinearVelocity
+	local horizontalVelocity = Vector3.new(velocity.X, 0, velocity.Z)
+	local horizontalSpeed = horizontalVelocity.Magnitude
+	local slideSpeed = horizontalSpeed + ParkourConfig.SlideBoost
+
+	self.humanoid.AutoRotate = false
 
 	local connection
 	connection = RunService.PreSimulation:Connect(function(dt)
 		elapsedTime += dt
+
+		self.linearVelocity.PlaneVelocity =
+			Vector2.new(horizontalLookDir.X * slideSpeed, horizontalLookDir.Z * slideSpeed)
+
+		slideSpeed = math.max(0, slideSpeed - ParkourConfig.SlideDeceleration * dt)
+
 		if elapsedTime >= ParkourConfig.SlideDuration then
+			self.linearVelocity.Enabled = false
+			self.humanoid.AutoRotate = true
+
 			connection:Disconnect()
 
 			if self.wantsSprint then
@@ -99,9 +119,39 @@ end
 
 function ParkourController:SetCharacter(character)
 	self.character = character
+	self.rootPart = self.character:WaitForChild("HumanoidRootPart")
 	self.humanoid = self.character:WaitForChild("Humanoid")
 
+	self:CreateLinearVelocity()
+
 	self.state = "Walking"
+end
+
+function ParkourController:CreateLinearVelocity()
+	local attachment = Instance.new("Attachment")
+	attachment.Parent = self.rootPart
+
+	local linearVelocity = Instance.new("LinearVelocity")
+	linearVelocity.Attachment0 = attachment
+	linearVelocity.Enabled = false
+	linearVelocity.Parent = self.rootPart
+
+	self.linearVelocity = linearVelocity
+end
+
+function ParkourController:UpdateLinearVelocity()
+	if self.state == "Sliding" then
+		self.linearVelocity.Enabled = true
+
+		self.linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Plane
+		self.linearVelocity.PrimaryTangentAxis = Vector3.new(1, 0, 0)
+		self.linearVelocity.SecondaryTangentAxis = Vector3.new(0, 0, 1)
+
+		self.linearVelocity.ForceLimitMode = Enum.ForceLimitMode.PerAxis
+
+		local force = self.rootPart.AssemblyMass * 1000
+		self.linearVelocity.MaxPlanarAxesForce = Vector2.new(force, force)
+	end
 end
 
 function ParkourController:Start()
