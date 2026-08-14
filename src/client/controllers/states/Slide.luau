@@ -74,7 +74,7 @@ function Slide:Update(dt)
 
 	self.slideSpeed = math.max(0, self.slideSpeed - self.config.SlideDeceleration * dt)
 
-	if self.elapsedTime >= self.config.SlideDuration then
+	if self.elapsedTime >= self.config.SlideDuration or self.slideSpeed <= self.config.MinSlideSpeed then
 		self:Exit()
 	end
 end
