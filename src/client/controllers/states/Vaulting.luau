@@ -1,23 +1,6 @@
 local Vaulting = {}
 Vaulting.__index = Vaulting
 
-local Debris = game:GetService("Debris")
-
-local function DrawRay(origin: Vector3, direction: Vector3, color: Color3?, lifetime: number?)
-	local rayPart = Instance.new("Part")
-	rayPart.Anchored = true
-	rayPart.CanCollide = false
-	rayPart.CanQuery = false
-	rayPart.CanTouch = false
-	rayPart.Material = Enum.Material.Neon
-	rayPart.Color = color or Color3.new(1, 0, 0)
-	rayPart.Size = Vector3.new(0.1, 0.1, direction.Magnitude)
-	rayPart.CFrame = CFrame.lookAt(origin, origin + direction) * CFrame.new(0, 0, -direction.Magnitude / 2)
-	rayPart.Parent = workspace
-
-	Debris:AddItem(rayPart, lifetime or 1)
-end
-
 function Vaulting.new(character, humanoid, rootPart, config)
 	local self = setmetatable({}, Vaulting)
 
