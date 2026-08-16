@@ -9,7 +9,7 @@ function Walking.new(humanoid, config, animationController)
 	self.humanoid = humanoid
 	self.config = config
 
-	self.currentState = "Idle"
+	self.currentState = nil
 
 	self.connection = nil
 
@@ -27,22 +27,20 @@ function Walking:Enter()
 end
 
 function Walking:Update()
-	if self.humanoid.MoveDirection.Magnitude > 0 then
-		self.currentState = "Walking"
+	local nextState = self.humanoid.MoveDirection.Magnitude > 0 and "Walking" or "Idle"
+	if nextState ~= self.currentState then
+		self.animationController:Stop(self.currentState, 0.15)
+		self.animationController:Play(nextState, 0.15)
 
-		self.animationController:Stop("Idle", 0.15)
-		self.animationController:Play("Walking", 0.15)
-	else
-		self.currentState = "Idle"
-
-		self.animationController:Stop("Walking", 0.15)
-		self.animationController:Play("Idle", 0.15)
+		self.currentState = nextState
 	end
 end
 
 function Walking:Exit()
 	self.connection:Disconnect()
 	self.animationController:Stop(self.currentState, 0.15)
+
+	self.currentState = nil
 end
 
 return Walking

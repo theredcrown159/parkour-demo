@@ -44,6 +44,11 @@ function AnimationController:Play(name, fade)
 end
 
 function AnimationController:Stop(name, fade)
+	if not name then
+		return
+	end
+
+	self.currentTrack = nil
 	self.tracks[name]:Stop(fade)
 end
 
