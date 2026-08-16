@@ -27,7 +27,7 @@ function LedgeGrab:Enter()
 	self:CreateAlignPosition()
 	self:CreateAlignOrientation()
 
-	self.animationController:Play("LedgeGrab")
+	self.animationController:Play("LedgeGrab", 0.15)
 end
 
 function LedgeGrab:CreateAlignPosition()
@@ -96,7 +96,7 @@ function LedgeGrab:Exit()
 	self.alignPosition:Destroy()
 	self.alignOrientation:Destroy()
 
-	self.animationController:Stop("LedgeGrab")
+	self.animationController:Stop("LedgeGrab", 0.15)
 end
 
 return LedgeGrab

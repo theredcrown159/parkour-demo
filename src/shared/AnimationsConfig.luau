@@ -8,4 +8,5 @@ return {
 	Falling = "rbxassetid://80895719837708",
 	LandingLight = "rbxassetid://87234571013570",
 	LedgeGrab = "rbxassetid://117825376740459",
+	LedgeClimb = "rbxassetid://126520427341811",
 }

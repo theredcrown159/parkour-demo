@@ -9,6 +9,7 @@ local SprintingState = require(States:WaitForChild("Sprinting"))
 local VaultingState = require(States:WaitForChild("Vaulting"))
 local FallingState = require(States:WaitForChild("Falling"))
 local LedgeGrabState = require(States:WaitForChild("LedgeGrab"))
+local LedgeClimbState = require(States:WaitForChild("LedgeClimb"))
 
 local AnimationController = require(script.Parent:WaitForChild("AnimationController"))
 
@@ -117,6 +118,12 @@ function ParkourController:RequestSlide()
 end
 
 function ParkourController:RequestJump()
+	local canLedgeClimb = self.states.LedgeClimb:Check()
+	if self.state == "LedgeGrab" and canLedgeClimb then
+		self:TransitionTo("LedgeClimb")
+		return
+	end
+
 	local canVault = self.states.Vaulting:Check()
 	if canVault then
 		self:TransitionTo("Vaulting")
@@ -173,6 +180,20 @@ function ParkourController:SetCharacter(character)
 			self.rootPart,
 			self.attachment,
 			self.animationController
+		),
+		LedgeClimb = LedgeClimbState.new(
+			self.character,
+			self.humanoid,
+			self.rootPart,
+			self.attachment,
+			self.animationController,
+			function()
+				if self.wantsSprint then
+					self:TransitionTo("Sprinting")
+				else
+					self:TransitionTo("Walking")
+				end
+			end
 		),
 		Falling = FallingState.new(
 			self.humanoid,
