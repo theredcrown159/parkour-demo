@@ -1,5 +1,4 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 
 local ParkourAssets = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Parkour")
 local LedgeGrabAlignPosition = ParkourAssets:WaitForChild("LedgeGrabAlignPosition")
@@ -21,8 +20,6 @@ function LedgeGrab.new(character, humanoid, rootPart, attachment, animationContr
 
 	self.lastUseTime = 0
 
-	self.connection = nil
-
 	return self
 end
 
@@ -31,14 +28,6 @@ function LedgeGrab:Enter()
 	self:CreateAlignOrientation()
 
 	self.animationController:Play("LedgeGrab")
-
-	self.connection = RunService.PreSimulation:Connect(function()
-		self:Update()
-	end)
-end
-
-function LedgeGrab:Update()
-	self.lastUseTime = os.clock()
 end
 
 function LedgeGrab:CreateAlignPosition()
@@ -102,10 +91,10 @@ function LedgeGrab:FindTopSurface(raycastParams)
 end
 
 function LedgeGrab:Exit()
+	self.lastUseTime = os.clock()
+
 	self.alignPosition:Destroy()
 	self.alignOrientation:Destroy()
-
-	self.connection:Disconnect()
 
 	self.animationController:Stop("LedgeGrab")
 end

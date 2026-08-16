@@ -116,16 +116,13 @@ function ParkourController:RequestSlide()
 	self:TransitionTo("Sliding")
 end
 
-function ParkourController:RequestVault()
+function ParkourController:RequestJump()
 	local canVault = self.states.Vaulting:Check()
-	if not canVault then
-		return false
+	if canVault then
+		self:TransitionTo("Vaulting")
+		return
 	end
 
-	return self:TransitionTo("Vaulting")
-end
-
-function ParkourController:RequestFall()
 	self:TransitionTo("Falling")
 end
 

@@ -40,7 +40,6 @@ function Falling:Update()
 
 		if canLedgeGrab then
 			self.animationController:Stop("Jumping")
-			self.onFinished()
 		else
 			self.animationController:Stop("Jumping")
 			self.animationController:Play("Falling")
