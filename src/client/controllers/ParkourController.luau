@@ -1,5 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterPlayer = game:GetService("StarterPlayer")
 
+local Falling = require(StarterPlayer.StarterPlayerScripts.Client.controllers.states.Falling)
 local ParkourConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("ParkourConfig"))
 
 local States = script.Parent:WaitForChild("states")
@@ -7,6 +9,7 @@ local SlidingState = require(States:WaitForChild("Sliding"))
 local WalkingState = require(States:WaitForChild("Walking"))
 local SprintingState = require(States:WaitForChild("Sprinting"))
 local VaultingState = require(States:WaitForChild("Vaulting"))
+local FallingState = require(States:WaitForChild("Falling"))
 
 local AnimationController = require(script.Parent:WaitForChild("AnimationController"))
 
@@ -14,20 +17,37 @@ local ALLOWED_TRANSITIONS = {
 	None = {
 		Walking = true,
 	},
+	Falling = {
+		Walking = true,
+		Sprinting = true,
+		LedgeGrab = true,
+	},
 	Walking = {
+		Falling = true,
 		Sprinting = true,
 		Vaulting = true,
+		LedgeGrab = true,
 	},
 	Sprinting = {
+		Falling = true,
 		Walking = true,
 		Sliding = true,
 		Vaulting = true,
+		LedgeGrab = true,
 	},
 	Sliding = {
 		Walking = true,
 		Sprinting = true,
 	},
 	Vaulting = {
+		Walking = true,
+		Sprinting = true,
+	},
+	LedgeGrab = {
+		Falling = true,
+		LedgeClimb = true,
+	},
+	LedgeClimb = {
 		Walking = true,
 		Sprinting = true,
 	},
@@ -39,7 +59,6 @@ ParkourController.__index = ParkourController
 function ParkourController.new()
 	local self = setmetatable({}, ParkourController)
 
-	self.lastState = "None"
 	self.state = "None"
 	self.states = {}
 	self.wantsSprint = false
@@ -107,6 +126,10 @@ function ParkourController:RequestVault()
 	return self:TransitionTo("Vaulting")
 end
 
+function ParkourController:RequestFall()
+	self:TransitionTo("Falling")
+end
+
 function ParkourController:SetCharacter(character)
 	self.character = character
 	self.rootPart = self.character:WaitForChild("HumanoidRootPart")
@@ -148,6 +171,13 @@ function ParkourController:SetCharacter(character)
 				end
 			end
 		),
+		Falling = FallingState.new(self.humanoid, self.rootPart, function()
+			if self.wantsSprint then
+				self:TransitionTo("Sprinting")
+			else
+				self:TransitionTo("Walking")
+			end
+		end),
 	}
 
 	self.state = "Walking"

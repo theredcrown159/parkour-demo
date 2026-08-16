@@ -18,7 +18,13 @@ end
 
 function InputController:Start()
 	local pressedJumpConnection = self.Jump.Pressed:Connect(function()
-		self.parkourController:RequestVault()
+		local canVault = self.parkourController:RequestVault()
+
+		if canVault then
+			return
+		end
+
+		self.parkourController:RequestFall()
 	end)
 
 	local pressedSlideConnection = self.Slide.Pressed:Connect(function()
