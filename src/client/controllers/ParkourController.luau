@@ -1,7 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterPlayer = game:GetService("StarterPlayer")
 
-local Falling = require(StarterPlayer.StarterPlayerScripts.Client.controllers.states.Falling)
 local ParkourConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("ParkourConfig"))
 
 local States = script.Parent:WaitForChild("states")
@@ -10,6 +8,7 @@ local WalkingState = require(States:WaitForChild("Walking"))
 local SprintingState = require(States:WaitForChild("Sprinting"))
 local VaultingState = require(States:WaitForChild("Vaulting"))
 local FallingState = require(States:WaitForChild("Falling"))
+local LedgeGrabState = require(States:WaitForChild("LedgeGrab"))
 
 local AnimationController = require(script.Parent:WaitForChild("AnimationController"))
 
@@ -171,13 +170,32 @@ function ParkourController:SetCharacter(character)
 				end
 			end
 		),
-		Falling = FallingState.new(self.humanoid, self.rootPart, function()
-			if self.wantsSprint then
-				self:TransitionTo("Sprinting")
-			else
-				self:TransitionTo("Walking")
+		LedgeGrab = LedgeGrabState.new(
+			self.character,
+			self.humanoid,
+			self.rootPart,
+			self.attachment,
+			self.animationController
+		),
+		Falling = FallingState.new(
+			self.humanoid,
+			self.rootPart,
+			function()
+				if self.wantsSprint then
+					self:TransitionTo("Sprinting")
+				else
+					self:TransitionTo("Walking")
+				end
+			end,
+			self.animationController,
+			function()
+				local canLedgeGrab = self.states.LedgeGrab:Check()
+				if canLedgeGrab then
+					return self:TransitionTo("LedgeGrab")
+				end
+				return false
 			end
-		end),
+		),
 	}
 
 	self.state = "Walking"

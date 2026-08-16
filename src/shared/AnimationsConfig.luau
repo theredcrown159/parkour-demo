@@ -4,4 +4,8 @@ return {
 	Sprinting = "rbxassetid://83885990853095",
 	Sliding = "rbxassetid://123709447732194",
 	Vaulting = "rbxassetid://88053948661634",
+	Jumping = "rbxassetid://128095993352921",
+	Falling = "rbxassetid://80895719837708",
+	LandingLight = "rbxassetid://87234571013570",
+	LedgeGrab = "rbxassetid://117825376740459",
 }
