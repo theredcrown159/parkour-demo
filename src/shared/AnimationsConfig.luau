@@ -3,4 +3,5 @@ return {
 	Walking = "rbxassetid://99116824180637",
 	Sprinting = "rbxassetid://83885990853095",
 	Sliding = "rbxassetid://123709447732194",
+	Vaulting = "rbxassetid://88053948661634",
 }

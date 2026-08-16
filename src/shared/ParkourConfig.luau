@@ -9,4 +9,6 @@ return {
 
 	VaultCheckDistance = 4,
 	VaultMaxHeight = 4,
+	VaultHorizontalSpeedMultiplier = 1.3,
+	VaultVerticalSpeedMultiplier = 1,
 }

@@ -16,12 +16,18 @@ local ALLOWED_TRANSITIONS = {
 	},
 	Walking = {
 		Sprinting = true,
+		Vaulting = true,
 	},
 	Sprinting = {
 		Walking = true,
 		Sliding = true,
+		Vaulting = true,
 	},
 	Sliding = {
+		Walking = true,
+		Sprinting = true,
+	},
+	Vaulting = {
 		Walking = true,
 		Sprinting = true,
 	},
@@ -93,7 +99,12 @@ function ParkourController:RequestSlide()
 end
 
 function ParkourController:RequestVault()
-	self.states.Vaulting:Check()
+	local canVault = self.states.Vaulting:Check()
+	if not canVault then
+		return false
+	end
+
+	return self:TransitionTo("Vaulting")
 end
 
 function ParkourController:SetCharacter(character)
@@ -122,7 +133,21 @@ function ParkourController:SetCharacter(character)
 				end
 			end
 		),
-		Vaulting = VaultingState.new(self.character, self.humanoid, self.rootPart, ParkourConfig),
+		Vaulting = VaultingState.new(
+			self.character,
+			self.humanoid,
+			self.rootPart,
+			ParkourConfig,
+			self.attachment,
+			self.animationController,
+			function()
+				if self.wantsSprint then
+					self:TransitionTo("Sprinting")
+				else
+					self:TransitionTo("Walking")
+				end
+			end
+		),
 	}
 
 	self.state = "Walking"
