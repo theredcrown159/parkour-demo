@@ -60,7 +60,7 @@ function Vaulting:Update(dt)
 
 	self.verticalSpeed -= self.verticalAcceleration * dt
 
-	if self.verticalSpeed <= -10 then
+	if self.verticalSpeed <= self.config.VaultFinishVerticalSpeed then
 		self.onFinished()
 	end
 end
@@ -74,13 +74,13 @@ function Vaulting:CalculateVaultMovement()
 	self.horizontalSpeed = horizontalVelocity.Magnitude * self.config.VaultHorizontalSpeedMultiplier
 
 	self.verticalLookDir = Vector3.yAxis
-	self.verticalSpeed = 12 * self.config.VaultHorizontalSpeedMultiplier
+	self.verticalSpeed = self.config.VaultInitialVerticalSpeed * self.config.VaultHorizontalSpeedMultiplier
 
-	self.verticalAcceleration = 60 * self.config.VaultVerticalSpeedMultiplier
+	self.verticalAcceleration = self.config.VaultVerticalAcceleration * self.config.VaultVerticalSpeedMultiplier
 end
 
 function Vaulting:CreateLinearVelocity()
-	local force = self.rootPart.AssemblyMass * 1000
+	local force = self.rootPart.AssemblyMass * self.config.VaultForceMultiplier
 
 	local linearVelocity = VaultLinearVelocity:Clone()
 	linearVelocity.MaxAxesForce = Vector3.new(force, force, force)
@@ -159,7 +159,7 @@ function Vaulting:FindFrontFace(context)
 end
 
 function Vaulting:HasTopClearance(context)
-	local rayOrigin = self.rootPart.Position + Vector3.new(0, 2.5, 0)
+	local rayOrigin = self.rootPart.Position + Vector3.new(0, self.config.VaultTopClearanceHeight, 0)
 	local rayDirection = context.forward
 
 	return not game.Workspace:Raycast(rayOrigin, rayDirection * self.config.VaultCheckDistance, context.raycastParams)
@@ -173,24 +173,30 @@ function Vaulting:FindGround(context)
 end
 
 function Vaulting:FindTopSurface(result, context)
-	local rayOrigin = result.Position + Vector3.new(0, self.config.VaultMaxHeight, 0) + context.forward * 0.05
+	local rayOrigin = result.Position
+		+ Vector3.new(0, self.config.VaultMaxHeight, 0)
+		+ context.forward * self.config.VaultTopProbeInset
 	local rayDirection = Vector3.new(0, -1, 0) * self.config.VaultMaxHeight
 
 	return game.Workspace:Raycast(rayOrigin, rayDirection, context.raycastParams)
 end
 
 function Vaulting:HasClearance(result, context)
-	local rayOrigin = result.Position + context.forward * 6
+	local rayOrigin = result.Position + context.forward * self.config.VaultClearanceDistance
 	local rayDirection = -context.forward
 
-	return not game.Workspace:Raycast(rayOrigin, rayDirection * 2, context.raycastParams)
+	return not game.Workspace:Raycast(
+		rayOrigin,
+		rayDirection * self.config.VaultClearanceCheckLength,
+		context.raycastParams
+	)
 end
 
 function Vaulting:FindLandingSurface(result, context)
-	local rayOrigin = result.Position + context.forward * 5
+	local rayOrigin = result.Position + context.forward * self.config.VaultLandingCheckDistance
 	local rayDirection = Vector3.new(0, -1, 0)
 
-	return game.Workspace:Raycast(rayOrigin, rayDirection * 5, context.raycastParams)
+	return game.Workspace:Raycast(rayOrigin, rayDirection * self.config.VaultGroundCheckDistance, context.raycastParams)
 end
 
 function Vaulting:Exit()
