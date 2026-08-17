@@ -12,7 +12,6 @@ function Falling.new(context, returnToLocomotion, tryLedgeGrab)
 	self.onFinished = returnToLocomotion
 
 	self.animationController = context.animationController
-	self.currentAnimation = nil
 
 	self.connection = nil
 
@@ -52,7 +51,28 @@ end
 
 function Falling:Exit()
 	self.animationController:Stop("Falling", 0.15)
+
 	self.connection:Disconnect()
+	self.connection = nil
+end
+
+function Falling:Destroy()
+	if self.connection then
+		self.connection:Disconnect()
+		self.connection = nil
+	end
+
+	self.animationController:Stop("Jumping", 0)
+	self.animationController:Stop("Falling", 0)
+
+	self.humanoid = nil
+	self.rootPart = nil
+
+	self.onFinished = nil
+
+	self.animationController = nil
+
+	self.tryLedgeGrab = nil
 end
 
 return Falling

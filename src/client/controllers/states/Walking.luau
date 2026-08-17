@@ -38,9 +38,27 @@ end
 
 function Walking:Exit()
 	self.connection:Disconnect()
+	self.connection = nil
+
 	self.animationController:Stop(self.currentState, 0.15)
 
 	self.currentState = nil
+end
+
+function Walking:Destroy()
+	if self.connection then
+		self.connection:Disconnect()
+		self.connection = nil
+	end
+
+	self.animationController:Stop(self.currentState, 0)
+
+	self.humanoid = nil
+	self.config = nil
+
+	self.currentState = nil
+
+	self.animationController = nil
 end
 
 return Walking

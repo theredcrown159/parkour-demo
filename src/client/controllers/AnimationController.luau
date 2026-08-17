@@ -48,8 +48,28 @@ function AnimationController:Stop(name, fade)
 		return
 	end
 
+	if self.tracks[name].IsPlaying then
+		self.tracks[name]:Stop(fade)
+	end
+
+	if self.currentTrack == name then
+		self.currentTrack = nil
+	end
+end
+
+function AnimationController:Destroy()
+	for _, track in pairs(self.tracks) do
+		if track.IsPlaying then
+			track:Stop(0)
+		end
+
+		track:Destroy()
+	end
+
+	self.tracks = {}
 	self.currentTrack = nil
-	self.tracks[name]:Stop(fade)
+	self.animator = nil
+	self.humanoid = nil
 end
 
 return AnimationController

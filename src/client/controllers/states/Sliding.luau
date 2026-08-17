@@ -29,6 +29,8 @@ function Sliding.new(context, returnToLocomotion)
 
 	self.animationController = context.animationController
 
+	self.isActive = false
+
 	return self
 end
 
@@ -58,6 +60,7 @@ function Sliding:CalculateSlideMovement()
 end
 
 function Sliding:Enter()
+	self.isActive = true
 	self.humanoid.AutoRotate = false
 
 	self:CreateLinearVelocity()
@@ -85,13 +88,50 @@ function Sliding:Update(dt)
 end
 
 function Sliding:Exit()
+	self.connection:Disconnect()
+	self.connection = nil
+
+	self.linearVelocity:Destroy()
+	self.linearVelocity = nil
+
+	self.isActive = false
 	self.humanoid.AutoRotate = true
 
 	self.elapsedTime = 0
 	self.slideSpeed = 0
+end
 
-	self.linearVelocity:Destroy()
-	self.connection:Disconnect()
+function Sliding:Destroy()
+	if self.isActive then
+		self.humanoid.AutoRotate = true
+		self.isActive = nil
+	end
+
+	if self.connection then
+		self.connection:Disconnect()
+		self.connection = nil
+	end
+
+	if self.linearVelocity then
+		self.linearVelocity:Destroy()
+		self.linearVelocity = nil
+	end
+
+	self.rootPart = nil
+	self.humanoid = nil
+
+	self.attachment = nil
+
+	self.elapsedTime = nil
+
+	self.config = nil
+
+	self.horizontalLookDir = nil
+	self.slideSpeed = nil
+
+	self.onFinished = nil
+
+	self.animationController = nil
 end
 
 return Sliding

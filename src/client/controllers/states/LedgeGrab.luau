@@ -94,9 +94,36 @@ function LedgeGrab:Exit()
 	self.lastUseTime = os.clock()
 
 	self.alignPosition:Destroy()
+	self.alignPosition = nil
+
 	self.alignOrientation:Destroy()
+	self.alignOrientation = nil
 
 	self.animationController:Stop("LedgeGrab", 0.15)
+end
+
+function LedgeGrab:Destroy()
+	if self.alignPosition then
+		self.alignPosition:Destroy()
+		self.alignPosition = nil
+	end
+
+	if self.alignOrientation then
+		self.alignOrientation:Destroy()
+		self.alignOrientation = nil
+	end
+
+	self.animationController:Stop("LedgeGrab", 0)
+
+	self.character = nil
+	self.humanoid = nil
+	self.rootPart = nil
+
+	self.attachment = nil
+
+	self.animationController = nil
+
+	self.lastUseTime = nil
 end
 
 return LedgeGrab

@@ -70,7 +70,7 @@ function ParkourController.new()
 
 	self.attachment = nil
 
-	self.connections = {}
+	self.characterConnections = {}
 
 	self.animationController = nil
 
@@ -118,6 +118,10 @@ function ParkourController:RequestSlide()
 end
 
 function ParkourController:RequestJump()
+	if not self.character or not self.states.LedgeClimb or not self.states.Vaulting then
+		return
+	end
+
 	local canLedgeClimb = self.states.LedgeClimb:Check()
 	if self.state == "LedgeGrab" and canLedgeClimb then
 		self:TransitionTo("LedgeClimb")
@@ -175,9 +179,19 @@ function ParkourController:CreateStates()
 end
 
 function ParkourController:SetCharacter(character)
+	if not character then
+		return
+	end
+
+	self:ClearCharacter(self.character)
+
 	self.character = character
 	self.rootPart = self.character:WaitForChild("HumanoidRootPart")
 	self.humanoid = self.character:WaitForChild("Humanoid")
+
+	if self.character ~= character then
+		return
+	end
 
 	self.animationController = AnimationController.new(self.humanoid)
 
@@ -189,6 +203,41 @@ function ParkourController:SetCharacter(character)
 	self.states.Walking:Enter()
 end
 
+function ParkourController:ClearCharacter(character)
+	if self.character ~= character then
+		return
+	end
+
+	if self.states and self.state ~= "None" and self.states[self.state] then
+		self.states[self.state]:Exit()
+	end
+
+	if self.states then
+		for _, state in pairs(self.states) do
+			state:Destroy()
+		end
+
+		self.states = {}
+	end
+
+	if self.attachment then
+		self.attachment:Destroy()
+		self.attachment = nil
+	end
+
+	if self.animationController then
+		self.animationController:Destroy()
+		self.animationController = nil
+	end
+
+	self.character = nil
+	self.humanoid = nil
+	self.rootPart = nil
+
+	self.state = "None"
+	self.wantsSprint = false
+end
+
 function ParkourController:CreateAttachment()
 	local attachment = Instance.new("Attachment")
 	attachment.Parent = self.rootPart
@@ -197,21 +246,28 @@ function ParkourController:CreateAttachment()
 end
 
 function ParkourController:Start()
-	self:SetCharacter(self.player.Character or self.player.CharacterAdded:Wait())
-
-	local charaterAddedConnection = self.player.CharacterAdded:Connect(function(character)
+	local characterAddedConnection = self.player.CharacterAdded:Connect(function(character)
 		self:SetCharacter(character)
 	end)
 
-	table.insert(self.connections, charaterAddedConnection)
+	local characterRemovingConnection = self.player.CharacterRemoving:Connect(function(character)
+		self:ClearCharacter(character)
+	end)
+
+	table.insert(self.characterConnections, characterAddedConnection)
+	table.insert(self.characterConnections, characterRemovingConnection)
+
+	self:SetCharacter(self.player.Character)
 end
 
 function ParkourController:Destroy()
-	for _, connection in ipairs(self.connections) do
+	for _, connection in ipairs(self.characterConnections) do
 		connection:Disconnect()
 	end
 
-	self.connections = {}
+	self.characterConnections = {}
+
+	self:ClearCharacter(self.character)
 end
 
 return ParkourController

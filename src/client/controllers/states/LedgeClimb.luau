@@ -94,11 +94,45 @@ function LedgeClimb:Check()
 end
 
 function LedgeClimb:Exit()
-	self.animationController:Stop("LedgeClimb", 0.15)
-	self.alignOrientation:Destroy()
-	self.alignPosition:Destroy()
-
 	self.connection:Disconnect()
+	self.connection = nil
+
+	self.alignOrientation:Destroy()
+	self.alignOrientation = nil
+
+	self.alignPosition:Destroy()
+	self.alignPosition = nil
+
+	self.animationController:Stop("LedgeClimb", 0.15)
+end
+
+function LedgeClimb:Destroy()
+	if self.connection then
+		self.connection:Disconnect()
+		self.connection = nil
+	end
+
+	if self.alignOrientation then
+		self.alignOrientation:Destroy()
+		self.alignOrientation = nil
+	end
+
+	if self.alignPosition then
+		self.alignPosition:Destroy()
+		self.alignPosition = nil
+	end
+
+	self.animationController:Stop("LedgeClimb", 0)
+
+	self.character = nil
+	self.humanoid = nil
+	self.rootPart = nil
+
+	self.attachment = nil
+
+	self.onFinished = nil
+
+	self.animationController = nil
 end
 
 return LedgeClimb

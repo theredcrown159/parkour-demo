@@ -34,10 +34,13 @@ function Vaulting.new(context, returnToLocomotion)
 
 	self.connection = nil
 
+	self.isActive = false
+
 	return self
 end
 
 function Vaulting:Enter()
+	self.isActive = true
 	self.humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
 
 	self:CalculateVaultMovement()
@@ -200,11 +203,62 @@ function Vaulting:FindLandingSurface(result, context)
 end
 
 function Vaulting:Exit()
-	self.humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
+	self.connection:Disconnect()
+	self.connection = nil
 
 	self.linearVelocity:Destroy()
+	self.linearVelocity = nil
+
 	self.alignOrientation:Destroy()
-	self.connection:Disconnect()
+	self.alignOrientation = nil
+
+	self.isActive = false
+	self.humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
+
+	self.animationController:Stop("Vaulting", 0.05)
+end
+
+function Vaulting:Destroy()
+	if self.connection then
+		self.connection:Disconnect()
+		self.connection = nil
+	end
+
+	if self.linearVelocity then
+		self.linearVelocity:Destroy()
+		self.linearVelocity = nil
+	end
+
+	if self.alignOrientation then
+		self.alignOrientation:Destroy()
+		self.alignOrientation = nil
+	end
+
+	if self.isActive then
+		self.humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
+		self.isActive = nil
+	end
+
+	self.animationController:Stop("Vaulting", 0)
+
+	self.config = nil
+
+	self.character = nil
+	self.humanoid = nil
+	self.rootPart = nil
+
+	self.attachment = nil
+
+	self.horizontalLookDir = nil
+	self.horizontalSpeed = nil
+	self.verticalLookDir = nil
+	self.verticalSpeed = nil
+
+	self.animationController = nil
+
+	self.verticalAcceleration = nil
+
+	self.onFinished = nil
 end
 
 return Vaulting
