@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local ParkourAssets = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Parkour")
 local LedgeClimbAlignPosition = ParkourAssets:WaitForChild("LedgeClimbAlignPosition")
@@ -7,42 +8,20 @@ local LedgeClimbAlignOrientation = ParkourAssets:WaitForChild("LedgeClimbAlignOr
 local LedgeClimb = {}
 LedgeClimb.__index = LedgeClimb
 
-local Debris = game:GetService("Debris")
-local RunService = game:GetService("RunService")
-
-local function DrawBox(cframe: CFrame, size: Vector3, color: Color3?, lifetime: number?)
-	local part = Instance.new("Part")
-	part.Anchored = true
-	part.CanCollide = false
-	part.CanQuery = false
-	part.CanTouch = false
-
-	part.Size = size
-	part.CFrame = cframe
-
-	part.Transparency = 0.7
-	part.Material = Enum.Material.Neon
-	part.Color = color or Color3.fromRGB(0, 255, 0)
-
-	part.Parent = workspace
-
-	Debris:AddItem(part, lifetime or 1)
-end
-
-function LedgeClimb.new(character, humanoid, rootPart, attachment, animationController, onFinished)
+function LedgeClimb.new(context, returnToLocomotion)
 	local self = setmetatable({}, LedgeClimb)
 
-	self.character = character
-	self.humanoid = humanoid
-	self.rootPart = rootPart
+	self.character = context.character
+	self.humanoid = context.humanoid
+	self.rootPart = context.rootPart
 
-	self.attachment = attachment
+	self.attachment = context.attachment
 
-	self.onFinished = onFinished
+	self.onFinished = returnToLocomotion
 
 	self.connection = nil
 
-	self.animationController = animationController
+	self.animationController = context.animationController
 
 	return self
 end

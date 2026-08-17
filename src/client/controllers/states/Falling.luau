@@ -3,15 +3,15 @@ local RunService = game:GetService("RunService")
 local Falling = {}
 Falling.__index = Falling
 
-function Falling.new(humanoid, rootPart, onFinished, animationController, tryLedgeGrab)
+function Falling.new(context, returnToLocomotion, tryLedgeGrab)
 	local self = setmetatable({}, Falling)
 
-	self.humanoid = humanoid
-	self.rootPart = rootPart
+	self.humanoid = context.humanoid
+	self.rootPart = context.rootPart
 
-	self.onFinished = onFinished
+	self.onFinished = returnToLocomotion
 
-	self.animationController = animationController
+	self.animationController = context.animationController
 	self.currentAnimation = nil
 
 	self.connection = nil

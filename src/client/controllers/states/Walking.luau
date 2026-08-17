@@ -3,17 +3,17 @@ local RunService = game:GetService("RunService")
 local Walking = {}
 Walking.__index = Walking
 
-function Walking.new(humanoid, config, animationController)
+function Walking.new(context)
 	local self = setmetatable({}, Walking)
 
-	self.humanoid = humanoid
-	self.config = config
+	self.humanoid = context.humanoid
+	self.config = context.config
 
 	self.currentState = nil
 
 	self.connection = nil
 
-	self.animationController = animationController
+	self.animationController = context.animationController
 
 	return self
 end

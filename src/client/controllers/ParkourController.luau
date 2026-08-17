@@ -133,6 +133,47 @@ function ParkourController:RequestJump()
 	self:TransitionTo("Falling")
 end
 
+function ParkourController:ReturnToLocomotion()
+	local nextState = self.wantsSprint and "Sprinting" or "Walking"
+	return self:TransitionTo(nextState)
+end
+
+function ParkourController:TryLedgeGrab()
+	if not self.states.LedgeGrab:Check() then
+		return false
+	end
+	return self:TransitionTo("LedgeGrab")
+end
+
+function ParkourController:CreateStates()
+	local characterContext = {
+		character = self.character,
+		humanoid = self.humanoid,
+		rootPart = self.rootPart,
+		config = ParkourConfig,
+		attachment = self.attachment,
+		animationController = self.animationController,
+	}
+
+	local returnToLocomotion = function()
+		return self:ReturnToLocomotion()
+	end
+
+	local tryLedgeGrab = function()
+		return self:TryLedgeGrab()
+	end
+
+	self.states = {
+		Walking = WalkingState.new(characterContext),
+		Sprinting = SprintingState.new(characterContext),
+		Sliding = SlidingState.new(characterContext, returnToLocomotion),
+		Vaulting = VaultingState.new(characterContext, returnToLocomotion),
+		LedgeGrab = LedgeGrabState.new(characterContext),
+		LedgeClimb = LedgeClimbState.new(characterContext, returnToLocomotion),
+		Falling = FallingState.new(characterContext, returnToLocomotion, tryLedgeGrab),
+	}
+end
+
 function ParkourController:SetCharacter(character)
 	self.character = character
 	self.rootPart = self.character:WaitForChild("HumanoidRootPart")
@@ -142,79 +183,7 @@ function ParkourController:SetCharacter(character)
 
 	self:CreateAttachment()
 
-	self.states = {
-		Walking = WalkingState.new(self.humanoid, ParkourConfig, self.animationController),
-		Sprinting = SprintingState.new(self.humanoid, ParkourConfig, self.animationController),
-		Sliding = SlidingState.new(
-			self.rootPart,
-			self.humanoid,
-			self.attachment,
-			ParkourConfig,
-			self.animationController,
-			function()
-				if self.wantsSprint then
-					self:TransitionTo("Sprinting")
-				else
-					self:TransitionTo("Walking")
-				end
-			end
-		),
-		Vaulting = VaultingState.new(
-			self.character,
-			self.humanoid,
-			self.rootPart,
-			ParkourConfig,
-			self.attachment,
-			self.animationController,
-			function()
-				if self.wantsSprint then
-					self:TransitionTo("Sprinting")
-				else
-					self:TransitionTo("Walking")
-				end
-			end
-		),
-		LedgeGrab = LedgeGrabState.new(
-			self.character,
-			self.humanoid,
-			self.rootPart,
-			self.attachment,
-			self.animationController
-		),
-		LedgeClimb = LedgeClimbState.new(
-			self.character,
-			self.humanoid,
-			self.rootPart,
-			self.attachment,
-			self.animationController,
-			function()
-				if self.wantsSprint then
-					self:TransitionTo("Sprinting")
-				else
-					self:TransitionTo("Walking")
-				end
-			end
-		),
-		Falling = FallingState.new(
-			self.humanoid,
-			self.rootPart,
-			function()
-				if self.wantsSprint then
-					self:TransitionTo("Sprinting")
-				else
-					self:TransitionTo("Walking")
-				end
-			end,
-			self.animationController,
-			function()
-				local canLedgeGrab = self.states.LedgeGrab:Check()
-				if canLedgeGrab then
-					return self:TransitionTo("LedgeGrab")
-				end
-				return false
-			end
-		),
-	}
+	self:CreateStates()
 
 	self.state = "Walking"
 	self.states.Walking:Enter()

@@ -7,27 +7,27 @@ local SlideLinearVelocity = ParkourAssets:WaitForChild("SlideLinearVelocity")
 local Sliding = {}
 Sliding.__index = Sliding
 
-function Sliding.new(rootPart, humanoid, attachment, config, animationController, onFinished)
+function Sliding.new(context, returnToLocomotion)
 	local self = setmetatable({}, Sliding)
 
-	self.rootPart = rootPart
-	self.humanoid = humanoid
+	self.rootPart = context.rootPart
+	self.humanoid = context.humanoid
 
 	self.elapsedTime = 0
 
-	self.config = config
+	self.config = context.config
 
 	self.linearVelocity = nil
-	self.attachment = attachment
+	self.attachment = context.attachment
 
 	self.horizontalLookDir = nil
 	self.slideSpeed = nil
 
-	self.onFinished = onFinished
+	self.onFinished = returnToLocomotion
 
 	self.connection = nil
 
-	self.animationController = animationController
+	self.animationController = context.animationController
 
 	return self
 end

@@ -8,29 +8,29 @@ local VaultAlignOrientation = ParkourAssets:WaitForChild("VaultAlignOrientation"
 local Vaulting = {}
 Vaulting.__index = Vaulting
 
-function Vaulting.new(character, humanoid, rootPart, config, attachment, animationController, onFinished)
+function Vaulting.new(context, returnToLocomotion)
 	local self = setmetatable({}, Vaulting)
 
-	self.config = config
+	self.config = context.config
 
-	self.character = character
-	self.humanoid = humanoid
-	self.rootPart = rootPart
+	self.character = context.character
+	self.humanoid = context.humanoid
+	self.rootPart = context.rootPart
 
 	self.linearVelocity = nil
 	self.alignOrientation = nil
-	self.attachment = attachment
+	self.attachment = context.attachment
 
 	self.horizontalLookDir = nil
 	self.horizontalSpeed = nil
 	self.verticalLookDir = nil
 	self.verticalSpeed = nil
 
-	self.animationController = animationController
+	self.animationController = context.animationController
 
 	self.verticalAcceleration = nil
 
-	self.onFinished = onFinished
+	self.onFinished = returnToLocomotion
 
 	self.connection = nil
 

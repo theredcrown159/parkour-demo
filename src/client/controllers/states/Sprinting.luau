@@ -1,13 +1,13 @@
 local Sprinting = {}
 Sprinting.__index = Sprinting
 
-function Sprinting.new(humanoid, config, animationController)
+function Sprinting.new(context)
 	local self = setmetatable({}, Sprinting)
 
-	self.humanoid = humanoid
-	self.config = config
+	self.humanoid = context.humanoid
+	self.config = context.config
 
-	self.animationController = animationController
+	self.animationController = context.animationController
 
 	return self
 end

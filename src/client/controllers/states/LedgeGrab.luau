@@ -7,16 +7,16 @@ local LedgeGrabAlignOrientation = ParkourAssets:WaitForChild("LedgeGrabAlignOrie
 local LedgeGrab = {}
 LedgeGrab.__index = LedgeGrab
 
-function LedgeGrab.new(character, humanoid, rootPart, attachment, animationController)
+function LedgeGrab.new(context)
 	local self = setmetatable({}, LedgeGrab)
 
-	self.character = character
-	self.humanoid = humanoid
-	self.rootPart = rootPart
+	self.character = context.character
+	self.humanoid = context.humanoid
+	self.rootPart = context.rootPart
 
-	self.attachment = attachment
+	self.attachment = context.attachment
 
-	self.animationController = animationController
+	self.animationController = context.animationController
 
 	self.lastUseTime = 0
 
