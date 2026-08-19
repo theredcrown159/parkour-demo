@@ -74,6 +74,8 @@ function ParkourController.new()
 
 	self.animationController = nil
 
+	self.started = false
+
 	return self
 end
 
@@ -186,17 +188,25 @@ function ParkourController:SetCharacter(character)
 	self:ClearCharacter(self.character)
 
 	self.character = character
-	self.rootPart = self.character:WaitForChild("HumanoidRootPart")
-	self.humanoid = self.character:WaitForChild("Humanoid")
+	local rootPart = character:WaitForChild("HumanoidRootPart")
+	local humanoid = character:WaitForChild("Humanoid")
 
 	if self.character ~= character then
 		return
 	end
 
-	self.animationController = AnimationController.new(self.humanoid)
+	local animationController = AnimationController.new(humanoid)
+
+	if self.character ~= character then
+		animationController:Destroy()
+		return
+	end
+
+	self.rootPart = rootPart
+	self.humanoid = humanoid
+	self.animationController = animationController
 
 	self:CreateAttachment()
-
 	self:CreateStates()
 
 	self.state = "Walking"
@@ -246,6 +256,12 @@ function ParkourController:CreateAttachment()
 end
 
 function ParkourController:Start()
+	if self.started then
+		return
+	end
+
+	self.started = true
+
 	local characterAddedConnection = self.player.CharacterAdded:Connect(function(character)
 		self:SetCharacter(character)
 	end)
@@ -268,6 +284,8 @@ function ParkourController:Destroy()
 	self.characterConnections = {}
 
 	self:ClearCharacter(self.character)
+
+	self.started = false
 end
 
 return ParkourController
