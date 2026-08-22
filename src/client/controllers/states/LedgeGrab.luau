@@ -24,7 +24,6 @@ function LedgeGrab.new(context, config)
 
 	self.frontFace = nil
 	self.topFace = nil
-	self.horizontalLookVec = nil
 
 	self.alignPosition = nil
 	self.alignOrientation = nil
@@ -65,39 +64,41 @@ function LedgeGrab:Check()
 	end
 
 	local lookVec = self.rootPart.CFrame.LookVector
-	self.horizontalLookVec = Vector3.new(lookVec.X, 0, lookVec.Z).Unit
+	local horizontalLookVec = Vector3.new(lookVec.X, 0, lookVec.Z).Unit
 
 	local raycastParams = RaycastParams.new()
 	raycastParams.FilterDescendantsInstances = { self.character }
 	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
 	raycastParams.IgnoreWater = true
 
-	self.frontFace = self:FindFrontFace(raycastParams)
-	if not self.frontFace then
-		return
+	local frontFace = self:FindFrontFace(raycastParams, horizontalLookVec)
+	if not frontFace then
+		return false
 	end
 
-	self.topFace = self:FindTopSurface(raycastParams)
-	if not self.topFace then
-		return
+	local topFace = self:FindTopSurface(raycastParams, frontFace, horizontalLookVec)
+	if not topFace then
+		return false
 	end
 
-	if self.topFace.Position.Y - self.rootPart.Position.Y < self.config.MaxHeight then
+	if topFace.Position.Y - self.rootPart.Position.Y < self.config.MaxHeight then
+		self.frontFace = frontFace
+		self.topFace = topFace
 		return true
 	end
 
 	return false
 end
 
-function LedgeGrab:FindFrontFace(raycastParams)
+function LedgeGrab:FindFrontFace(raycastParams, horizontalLookVec)
 	local rayOrigin = self.rootPart.Position + Vector3.new(0, self.config.FrontProbeHeight, 0)
-	return game.Workspace:Raycast(rayOrigin, self.horizontalLookVec * self.config.CheckDistance, raycastParams)
+	return game.Workspace:Raycast(rayOrigin, horizontalLookVec * self.config.CheckDistance, raycastParams)
 end
 
-function LedgeGrab:FindTopSurface(raycastParams)
-	local rayOrigin = self.frontFace.Position
+function LedgeGrab:FindTopSurface(raycastParams, frontFace, horizontalLookVec)
+	local rayOrigin = frontFace.Position
 		+ Vector3.new(0, self.config.TopProbeHeight, 0)
-		+ self.horizontalLookVec * self.config.TopProbeInset
+		+ horizontalLookVec * self.config.TopProbeInset
 	return game.Workspace:Raycast(rayOrigin, Vector3.new(0, -self.config.TopProbeHeight, 0), raycastParams)
 end
 
@@ -140,7 +141,6 @@ function LedgeGrab:Destroy()
 
 	self.frontFace = nil
 	self.topFace = nil
-	self.horizontalLookVec = nil
 end
 
 return LedgeGrab
