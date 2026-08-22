@@ -15,9 +15,7 @@ function LedgeGrab.new(context, config)
 	self.character = context.character
 	self.humanoid = context.humanoid
 	self.rootPart = context.rootPart
-
 	self.attachment = context.attachment
-
 	self.animationController = context.animationController
 
 	self.lastUseTime = 0
@@ -29,6 +27,50 @@ function LedgeGrab.new(context, config)
 	self.alignOrientation = nil
 
 	return self
+end
+
+function LedgeGrab:Check()
+	if os.clock() - self.lastUseTime < self.config.Cooldown then
+		return false
+	end
+
+	local lookVec = self.rootPart.CFrame.LookVector
+	local horizontalLookVec = Vector3.new(lookVec.X, 0, lookVec.Z).Unit
+
+	local raycastParams = RaycastParams.new()
+	raycastParams.FilterDescendantsInstances = { self.character }
+	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+	raycastParams.IgnoreWater = true
+
+	local frontFace = self:FindFrontFace(raycastParams, horizontalLookVec)
+	if not frontFace then
+		return false
+	end
+
+	local topFace = self:FindTopSurface(raycastParams, frontFace)
+	if not topFace then
+		return false
+	end
+
+	if topFace.Position.Y - self.rootPart.Position.Y < self.config.MaxHeight then
+		self.frontFace = frontFace
+		self.topFace = topFace
+		return true
+	end
+
+	return false
+end
+
+function LedgeGrab:FindFrontFace(raycastParams, horizontalLookVec)
+	local rayOrigin = self.rootPart.Position + Vector3.new(0, self.config.FrontProbeHeight, 0)
+	return game.Workspace:Raycast(rayOrigin, horizontalLookVec * self.config.CheckDistance, raycastParams)
+end
+
+function LedgeGrab:FindTopSurface(raycastParams, frontFace)
+	local rayOrigin = frontFace.Position
+		+ Vector3.new(0, self.config.TopProbeHeight, 0)
+		+ frontFace.Normal * -self.config.TopProbeInset
+	return game.Workspace:Raycast(rayOrigin, Vector3.new(0, -self.config.TopProbeHeight, 0), raycastParams)
 end
 
 function LedgeGrab:Enter()
@@ -58,50 +100,6 @@ function LedgeGrab:CreateAlignOrientation()
 	self.alignOrientation = alignOrientation
 end
 
-function LedgeGrab:Check()
-	if os.clock() - self.lastUseTime < self.config.Cooldown then
-		return false
-	end
-
-	local lookVec = self.rootPart.CFrame.LookVector
-	local horizontalLookVec = Vector3.new(lookVec.X, 0, lookVec.Z).Unit
-
-	local raycastParams = RaycastParams.new()
-	raycastParams.FilterDescendantsInstances = { self.character }
-	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
-	raycastParams.IgnoreWater = true
-
-	local frontFace = self:FindFrontFace(raycastParams, horizontalLookVec)
-	if not frontFace then
-		return false
-	end
-
-	local topFace = self:FindTopSurface(raycastParams, frontFace, horizontalLookVec)
-	if not topFace then
-		return false
-	end
-
-	if topFace.Position.Y - self.rootPart.Position.Y < self.config.MaxHeight then
-		self.frontFace = frontFace
-		self.topFace = topFace
-		return true
-	end
-
-	return false
-end
-
-function LedgeGrab:FindFrontFace(raycastParams, horizontalLookVec)
-	local rayOrigin = self.rootPart.Position + Vector3.new(0, self.config.FrontProbeHeight, 0)
-	return game.Workspace:Raycast(rayOrigin, horizontalLookVec * self.config.CheckDistance, raycastParams)
-end
-
-function LedgeGrab:FindTopSurface(raycastParams, frontFace, horizontalLookVec)
-	local rayOrigin = frontFace.Position
-		+ Vector3.new(0, self.config.TopProbeHeight, 0)
-		+ horizontalLookVec * self.config.TopProbeInset
-	return game.Workspace:Raycast(rayOrigin, Vector3.new(0, -self.config.TopProbeHeight, 0), raycastParams)
-end
-
 function LedgeGrab:Exit()
 	self.lastUseTime = os.clock()
 
@@ -112,6 +110,9 @@ function LedgeGrab:Exit()
 	self.alignOrientation = nil
 
 	self.animationController:Stop("LedgeGrab", self.config.AnimationFadeTime)
+
+	self.frontFace = nil
+	self.topFace = nil
 end
 
 function LedgeGrab:Destroy()
@@ -132,9 +133,7 @@ function LedgeGrab:Destroy()
 	self.character = nil
 	self.humanoid = nil
 	self.rootPart = nil
-
 	self.attachment = nil
-
 	self.animationController = nil
 
 	self.lastUseTime = nil
