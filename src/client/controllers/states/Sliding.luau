@@ -7,7 +7,7 @@ local SlideLinearVelocity = ParkourAssets:WaitForChild("SlideLinearVelocity")
 local Sliding = {}
 Sliding.__index = Sliding
 
-function Sliding.new(context, returnToLocomotion)
+function Sliding.new(context, returnToLocomotion, config)
 	local self = setmetatable({}, Sliding)
 
 	self.rootPart = context.rootPart
@@ -15,7 +15,7 @@ function Sliding.new(context, returnToLocomotion)
 
 	self.elapsedTime = 0
 
-	self.config = context.config
+	self.config = config
 
 	self.linearVelocity = nil
 	self.attachment = context.attachment
@@ -53,7 +53,7 @@ function Sliding:CalculateSlideMovement()
 	local velocity = self.rootPart.AssemblyLinearVelocity
 	local horizontalVelocity = Vector3.new(velocity.X, 0, velocity.Z)
 	local horizontalSpeed = horizontalVelocity.Magnitude
-	local slideSpeed = horizontalSpeed + self.config.SlideBoost
+	local slideSpeed = horizontalSpeed + self.config.Boost
 
 	self.horizontalLookDir = horizontalLookDir
 	self.slideSpeed = slideSpeed
@@ -79,9 +79,9 @@ function Sliding:Update(dt)
 	self.linearVelocity.PlaneVelocity =
 		Vector2.new(self.horizontalLookDir.X * self.slideSpeed, self.horizontalLookDir.Z * self.slideSpeed)
 
-	self.slideSpeed = math.max(0, self.slideSpeed - self.config.SlideDeceleration * dt)
+	self.slideSpeed = math.max(0, self.slideSpeed - self.config.Deceleration * dt)
 
-	if self.elapsedTime >= self.config.SlideDuration or self.slideSpeed <= self.config.MinSlideSpeed then
+	if self.elapsedTime >= self.config.Duration or self.slideSpeed <= self.config.MinSpeed then
 		self.animationController:Stop("Sliding", 0.2)
 		self.onFinished()
 	end

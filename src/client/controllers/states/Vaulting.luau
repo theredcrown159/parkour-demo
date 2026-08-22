@@ -8,10 +8,10 @@ local VaultAlignOrientation = ParkourAssets:WaitForChild("VaultAlignOrientation"
 local Vaulting = {}
 Vaulting.__index = Vaulting
 
-function Vaulting.new(context, returnToLocomotion)
+function Vaulting.new(context, returnToLocomotion, config)
 	local self = setmetatable({}, Vaulting)
 
-	self.config = context.config
+	self.config = config
 
 	self.character = context.character
 	self.humanoid = context.humanoid
@@ -63,7 +63,7 @@ function Vaulting:Update(dt)
 
 	self.verticalSpeed -= self.verticalAcceleration * dt
 
-	if self.verticalSpeed <= self.config.VaultFinishVerticalSpeed then
+	if self.verticalSpeed <= self.config.FinishVerticalSpeed then
 		self.onFinished()
 	end
 end
@@ -74,16 +74,16 @@ function Vaulting:CalculateVaultMovement()
 
 	local velocity = self.rootPart.AssemblyLinearVelocity
 	local horizontalVelocity = Vector3.new(velocity.X, 0, velocity.Z)
-	self.horizontalSpeed = horizontalVelocity.Magnitude * self.config.VaultHorizontalSpeedMultiplier
+	self.horizontalSpeed = horizontalVelocity.Magnitude * self.config.HorizontalSpeedMultiplier
 
 	self.verticalLookDir = Vector3.yAxis
-	self.verticalSpeed = self.config.VaultInitialVerticalSpeed * self.config.VaultHorizontalSpeedMultiplier
+	self.verticalSpeed = self.config.InitialVerticalSpeed * self.config.HorizontalSpeedMultiplier
 
-	self.verticalAcceleration = self.config.VaultVerticalAcceleration * self.config.VaultVerticalSpeedMultiplier
+	self.verticalAcceleration = self.config.VerticalAcceleration * self.config.VerticalSpeedMultiplier
 end
 
 function Vaulting:CreateLinearVelocity()
-	local force = self.rootPart.AssemblyMass * self.config.VaultForceMultiplier
+	local force = self.rootPart.AssemblyMass * self.config.ForceMultiplier
 
 	local linearVelocity = VaultLinearVelocity:Clone()
 	linearVelocity.MaxAxesForce = Vector3.new(force, force, force)
@@ -147,7 +147,7 @@ function Vaulting:Check()
 		return false
 	end
 
-	if topSurfaceResult.Position.Y - groundResult.Position.Y > self.config.VaultMaxHeight then
+	if topSurfaceResult.Position.Y - groundResult.Position.Y > self.config.MaxHeight then
 		return false
 	end
 
@@ -158,14 +158,14 @@ function Vaulting:FindFrontFace(context)
 	local rayOrigin = self.rootPart.Position - Vector3.new(0, 1, 0)
 	local rayDirection = context.forward
 
-	return game.Workspace:Raycast(rayOrigin, rayDirection * self.config.VaultCheckDistance, context.raycastParams)
+	return game.Workspace:Raycast(rayOrigin, rayDirection * self.config.CheckDistance, context.raycastParams)
 end
 
 function Vaulting:HasTopClearance(context)
-	local rayOrigin = self.rootPart.Position + Vector3.new(0, self.config.VaultTopClearanceHeight, 0)
+	local rayOrigin = self.rootPart.Position + Vector3.new(0, self.config.TopClearanceHeight, 0)
 	local rayDirection = context.forward
 
-	return not game.Workspace:Raycast(rayOrigin, rayDirection * self.config.VaultCheckDistance, context.raycastParams)
+	return not game.Workspace:Raycast(rayOrigin, rayDirection * self.config.CheckDistance, context.raycastParams)
 end
 
 function Vaulting:FindGround(context)
@@ -177,29 +177,25 @@ end
 
 function Vaulting:FindTopSurface(result, context)
 	local rayOrigin = result.Position
-		+ Vector3.new(0, self.config.VaultMaxHeight, 0)
-		+ context.forward * self.config.VaultTopProbeInset
-	local rayDirection = Vector3.new(0, -1, 0) * self.config.VaultMaxHeight
+		+ Vector3.new(0, self.config.MaxHeight, 0)
+		+ context.forward * self.config.TopProbeInset
+	local rayDirection = Vector3.new(0, -1, 0) * self.config.MaxHeight
 
 	return game.Workspace:Raycast(rayOrigin, rayDirection, context.raycastParams)
 end
 
 function Vaulting:HasClearance(result, context)
-	local rayOrigin = result.Position + context.forward * self.config.VaultClearanceDistance
+	local rayOrigin = result.Position + context.forward * self.config.ClearanceDistance
 	local rayDirection = -context.forward
 
-	return not game.Workspace:Raycast(
-		rayOrigin,
-		rayDirection * self.config.VaultClearanceCheckLength,
-		context.raycastParams
-	)
+	return not game.Workspace:Raycast(rayOrigin, rayDirection * self.config.ClearanceCheckLength, context.raycastParams)
 end
 
 function Vaulting:FindLandingSurface(result, context)
-	local rayOrigin = result.Position + context.forward * self.config.VaultLandingCheckDistance
+	local rayOrigin = result.Position + context.forward * self.config.LandingCheckDistance
 	local rayDirection = Vector3.new(0, -1, 0)
 
-	return game.Workspace:Raycast(rayOrigin, rayDirection * self.config.VaultGroundCheckDistance, context.raycastParams)
+	return game.Workspace:Raycast(rayOrigin, rayDirection * self.config.GroundCheckDistance, context.raycastParams)
 end
 
 function Vaulting:Exit()

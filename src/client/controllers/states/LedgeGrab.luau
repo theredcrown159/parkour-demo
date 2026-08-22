@@ -7,8 +7,10 @@ local LedgeGrabAlignOrientation = ParkourAssets:WaitForChild("LedgeGrabAlignOrie
 local LedgeGrab = {}
 LedgeGrab.__index = LedgeGrab
 
-function LedgeGrab.new(context)
+function LedgeGrab.new(context, config)
 	local self = setmetatable({}, LedgeGrab)
+
+	self.config = config
 
 	self.character = context.character
 	self.humanoid = context.humanoid
@@ -20,6 +22,13 @@ function LedgeGrab.new(context)
 
 	self.lastUseTime = 0
 
+	self.frontFace = nil
+	self.topFace = nil
+	self.horizontalLookVec = nil
+
+	self.alignPosition = nil
+	self.alignOrientation = nil
+
 	return self
 end
 
@@ -27,14 +36,14 @@ function LedgeGrab:Enter()
 	self:CreateAlignPosition()
 	self:CreateAlignOrientation()
 
-	self.animationController:Play("LedgeGrab", 0.15)
+	self.animationController:Play("LedgeGrab", self.config.AnimationFadeTime)
 end
 
 function LedgeGrab:CreateAlignPosition()
 	local alignPosition = LedgeGrabAlignPosition:Clone()
 	alignPosition.Position = Vector3.new(self.frontFace.Position.X, self.topFace.Position.Y, self.frontFace.Position.Z)
-		+ self.frontFace.Normal * 0.7
-		- Vector3.new(0, 1.5, 0)
+		+ self.frontFace.Normal * self.config.WallOffset
+		- Vector3.new(0, self.config.VerticalOffset, 0)
 	alignPosition.Attachment0 = self.attachment
 	alignPosition.Parent = self.rootPart
 
@@ -51,7 +60,7 @@ function LedgeGrab:CreateAlignOrientation()
 end
 
 function LedgeGrab:Check()
-	if os.clock() - self.lastUseTime < 1 then
+	if os.clock() - self.lastUseTime < self.config.Cooldown then
 		return false
 	end
 
@@ -73,7 +82,7 @@ function LedgeGrab:Check()
 		return
 	end
 
-	if self.topFace.Position.Y - self.rootPart.Position.Y < 3 then
+	if self.topFace.Position.Y - self.rootPart.Position.Y < self.config.MaxHeight then
 		return true
 	end
 
@@ -81,13 +90,15 @@ function LedgeGrab:Check()
 end
 
 function LedgeGrab:FindFrontFace(raycastParams)
-	local rayOrigin = self.rootPart.Position + Vector3.new(0, 2, 0)
-	return game.Workspace:Raycast(rayOrigin, self.horizontalLookVec * 3, raycastParams)
+	local rayOrigin = self.rootPart.Position + Vector3.new(0, self.config.FrontProbeHeight, 0)
+	return game.Workspace:Raycast(rayOrigin, self.horizontalLookVec * self.config.CheckDistance, raycastParams)
 end
 
 function LedgeGrab:FindTopSurface(raycastParams)
-	local rayOrigin = self.frontFace.Position + Vector3.new(0, 4, 0) + self.horizontalLookVec * 0.1
-	return game.Workspace:Raycast(rayOrigin, Vector3.new(0, -4, 0), raycastParams)
+	local rayOrigin = self.frontFace.Position
+		+ Vector3.new(0, self.config.TopProbeHeight, 0)
+		+ self.horizontalLookVec * self.config.TopProbeInset
+	return game.Workspace:Raycast(rayOrigin, Vector3.new(0, -self.config.TopProbeHeight, 0), raycastParams)
 end
 
 function LedgeGrab:Exit()
@@ -99,7 +110,7 @@ function LedgeGrab:Exit()
 	self.alignOrientation:Destroy()
 	self.alignOrientation = nil
 
-	self.animationController:Stop("LedgeGrab", 0.15)
+	self.animationController:Stop("LedgeGrab", self.config.AnimationFadeTime)
 end
 
 function LedgeGrab:Destroy()
@@ -115,6 +126,8 @@ function LedgeGrab:Destroy()
 
 	self.animationController:Stop("LedgeGrab", 0)
 
+	self.config = nil
+
 	self.character = nil
 	self.humanoid = nil
 	self.rootPart = nil
@@ -124,6 +137,10 @@ function LedgeGrab:Destroy()
 	self.animationController = nil
 
 	self.lastUseTime = nil
+
+	self.frontFace = nil
+	self.topFace = nil
+	self.horizontalLookVec = nil
 end
 
 return LedgeGrab

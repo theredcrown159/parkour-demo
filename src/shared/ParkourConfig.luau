@@ -1,29 +1,53 @@
 return {
-	WalkSpeed = 16,
-	SprintSpeed = 30,
+	Walking = {
+		Speed = 16,
+	},
 
-	SlideDuration = 2,
-	SlideBoost = 40,
-	SlideDeceleration = 60,
-	MinSlideSpeed = 20,
+	Sprinting = {
+		Speed = 30,
+	},
 
-	VaultCheckDistance = 4,
-	VaultMaxHeight = 4,
-	VaultHorizontalSpeedMultiplier = 1.3,
-	VaultVerticalSpeedMultiplier = 1,
+	Sliding = {
+		Duration = 2,
+		Boost = 40,
+		Deceleration = 60,
+		MinSpeed = 20,
+	},
 
-	VaultTopClearanceHeight = 2.5,
-	VaultTopProbeInset = 0.05,
+	Vaulting = {
+		CheckDistance = 4,
+		MaxHeight = 4,
+		HorizontalSpeedMultiplier = 1.3,
+		VerticalSpeedMultiplier = 1,
 
-	VaultClearanceDistance = 6,
-	VaultClearanceCheckLength = 2,
+		TopClearanceHeight = 2.5,
+		TopProbeInset = 0.05,
 
-	VaultLandingCheckDistance = 5,
-	VaultGroundCheckDistance = 5,
+		ClearanceDistance = 6,
+		ClearanceCheckLength = 2,
 
-	VaultInitialVerticalSpeed = 12,
-	VaultVerticalAcceleration = 60,
-	VaultFinishVerticalSpeed = -10,
+		LandingCheckDistance = 5,
+		GroundCheckDistance = 5,
 
-	VaultForceMultiplier = 1000,
+		InitialVerticalSpeed = 12,
+		VerticalAcceleration = 60,
+		FinishVerticalSpeed = -10,
+
+		ForceMultiplier = 1000,
+	},
+
+	LedgeGrab = {
+		Cooldown = 1,
+		FrontProbeHeight = 2,
+		CheckDistance = 3,
+
+		TopProbeHeight = 4,
+		TopProbeInset = 0.1,
+		MaxHeight = 3,
+
+		WallOffset = 0.7,
+		VerticalOffset = 1.5,
+
+		AnimationFadeTime = 0.15,
+	},
 }

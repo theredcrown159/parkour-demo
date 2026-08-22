@@ -1,11 +1,11 @@
 local Sprinting = {}
 Sprinting.__index = Sprinting
 
-function Sprinting.new(context)
+function Sprinting.new(context, config)
 	local self = setmetatable({}, Sprinting)
 
 	self.humanoid = context.humanoid
-	self.config = context.config
+	self.config = config
 
 	self.animationController = context.animationController
 
@@ -13,7 +13,7 @@ function Sprinting.new(context)
 end
 
 function Sprinting:Enter()
-	self.humanoid.WalkSpeed = self.config.SprintSpeed
+	self.humanoid.WalkSpeed = self.config.Speed
 
 	self.animationController:Play("Sprinting", 0.15)
 end

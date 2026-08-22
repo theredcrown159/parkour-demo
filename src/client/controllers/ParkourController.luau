@@ -156,7 +156,6 @@ function ParkourController:CreateStates()
 		character = self.character,
 		humanoid = self.humanoid,
 		rootPart = self.rootPart,
-		config = ParkourConfig,
 		attachment = self.attachment,
 		animationController = self.animationController,
 	}
@@ -170,11 +169,11 @@ function ParkourController:CreateStates()
 	end
 
 	self.states = {
-		Walking = WalkingState.new(characterContext),
-		Sprinting = SprintingState.new(characterContext),
-		Sliding = SlidingState.new(characterContext, returnToLocomotion),
-		Vaulting = VaultingState.new(characterContext, returnToLocomotion),
-		LedgeGrab = LedgeGrabState.new(characterContext),
+		Walking = WalkingState.new(characterContext, ParkourConfig.Walking),
+		Sprinting = SprintingState.new(characterContext, ParkourConfig.Sprinting),
+		Sliding = SlidingState.new(characterContext, returnToLocomotion, ParkourConfig.Sliding),
+		Vaulting = VaultingState.new(characterContext, returnToLocomotion, ParkourConfig.Vaulting),
+		LedgeGrab = LedgeGrabState.new(characterContext, ParkourConfig.LedgeGrab),
 		LedgeClimb = LedgeClimbState.new(characterContext, returnToLocomotion),
 		Falling = FallingState.new(characterContext, returnToLocomotion, tryLedgeGrab),
 	}

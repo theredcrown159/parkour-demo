@@ -3,11 +3,11 @@ local RunService = game:GetService("RunService")
 local Walking = {}
 Walking.__index = Walking
 
-function Walking.new(context)
+function Walking.new(context, config)
 	local self = setmetatable({}, Walking)
 
 	self.humanoid = context.humanoid
-	self.config = context.config
+	self.config = config
 
 	self.currentState = nil
 
@@ -19,7 +19,7 @@ function Walking.new(context)
 end
 
 function Walking:Enter()
-	self.humanoid.WalkSpeed = self.config.WalkSpeed
+	self.humanoid.WalkSpeed = self.config.Speed
 
 	self.connection = RunService.PreSimulation:Connect(function()
 		self:Update()
