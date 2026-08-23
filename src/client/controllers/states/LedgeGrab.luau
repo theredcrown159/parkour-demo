@@ -23,6 +23,8 @@ function LedgeGrab.new(context, config)
 	self.frontFace = nil
 	self.topFace = nil
 
+	self.horizontalFrontNormal = nil
+
 	self.alignPosition = nil
 	self.alignOrientation = nil
 
@@ -47,14 +49,30 @@ function LedgeGrab:Check()
 		return false
 	end
 
-	local topFace = self:FindTopSurface(raycastParams, frontFace)
+	local frontNormalY = math.abs(frontFace.Normal.Y)
+	if frontNormalY > self.config.MaxWallNormalY then
+		return false
+	end
+
+	local horizontalFrontNormal = Vector3.new(frontFace.Normal.X, 0, frontFace.Normal.Z).Unit
+
+	local topFace = self:FindTopSurface(raycastParams, frontFace, horizontalFrontNormal)
 	if not topFace then
 		return false
 	end
 
-	if topFace.Position.Y - self.rootPart.Position.Y < self.config.MaxHeight then
+	local topNormalY = topFace.Normal.Y
+	if topNormalY < self.config.MinTopNormalY then
+		return false
+	end
+
+	local height = topFace.Position.Y - self.rootPart.Position.Y
+
+	if height >= self.config.MinHeight and height <= self.config.MaxHeight then
 		self.frontFace = frontFace
 		self.topFace = topFace
+
+		self.horizontalFrontNormal = horizontalFrontNormal
 		return true
 	end
 
@@ -66,10 +84,10 @@ function LedgeGrab:FindFrontFace(raycastParams, horizontalLookVec)
 	return game.Workspace:Raycast(rayOrigin, horizontalLookVec * self.config.CheckDistance, raycastParams)
 end
 
-function LedgeGrab:FindTopSurface(raycastParams, frontFace)
+function LedgeGrab:FindTopSurface(raycastParams, frontFace, horizontalFrontNormal)
 	local rayOrigin = frontFace.Position
 		+ Vector3.new(0, self.config.TopProbeHeight, 0)
-		+ frontFace.Normal * -self.config.TopProbeInset
+		+ horizontalFrontNormal * -self.config.TopProbeInset
 	return game.Workspace:Raycast(rayOrigin, Vector3.new(0, -self.config.TopProbeHeight, 0), raycastParams)
 end
 
@@ -83,7 +101,7 @@ end
 function LedgeGrab:CreateAlignPosition()
 	local alignPosition = LedgeGrabAlignPosition:Clone()
 	alignPosition.Position = Vector3.new(self.frontFace.Position.X, self.topFace.Position.Y, self.frontFace.Position.Z)
-		+ self.frontFace.Normal * self.config.WallOffset
+		+ self.horizontalFrontNormal * self.config.WallOffset
 		- Vector3.new(0, self.config.VerticalOffset, 0)
 	alignPosition.Attachment0 = self.attachment
 	alignPosition.Parent = self.rootPart
@@ -93,7 +111,7 @@ end
 
 function LedgeGrab:CreateAlignOrientation()
 	local alignOrientation = LedgeGrabAlignOrientation:Clone()
-	alignOrientation.CFrame = CFrame.lookAt(Vector3.zero, -self.frontFace.Normal)
+	alignOrientation.CFrame = CFrame.lookAt(Vector3.zero, -self.horizontalFrontNormal)
 	alignOrientation.Attachment0 = self.attachment
 	alignOrientation.Parent = self.rootPart
 
@@ -113,6 +131,8 @@ function LedgeGrab:Exit()
 
 	self.frontFace = nil
 	self.topFace = nil
+
+	self.horizontalFrontNormal = nil
 end
 
 function LedgeGrab:Destroy()
@@ -140,6 +160,8 @@ function LedgeGrab:Destroy()
 
 	self.frontFace = nil
 	self.topFace = nil
+
+	self.horizontalFrontNormal = nil
 end
 
 return LedgeGrab

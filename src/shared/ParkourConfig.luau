@@ -43,7 +43,12 @@ return {
 
 		TopProbeHeight = 4,
 		TopProbeInset = 0.1,
+
+		MaxWallNormalY = 0.2,
+		MinTopNormalY = 0.7,
+
 		MaxHeight = 3,
+		MinHeight = 1.5,
 
 		WallOffset = 0.7,
 		VerticalOffset = 1.5,
