@@ -17,10 +17,18 @@ function Falling.new(context, returnToLocomotion, tryLedgeGrab)
 
 	self.tryLedgeGrab = tryLedgeGrab
 
+	self.stateChangedConnection = nil
+
 	return self
 end
 
 function Falling:Enter()
+	self.stateChangedConnection = self.humanoid.StateChanged:Connect(function(_, newState)
+		if newState == Enum.HumanoidStateType.Landed then
+			self.onFinished()
+		end
+	end)
+
 	self.connection = RunService.PreSimulation:Connect(function()
 		self:Update()
 	end)
@@ -30,11 +38,10 @@ function Falling:Update()
 	local yVelocity = self.rootPart.AssemblyLinearVelocity.Y
 	local isJumping = yVelocity > 0
 	local isFalling = yVelocity < 0
-	local isLanded = self.humanoid:GetState() == Enum.HumanoidStateType.Landed
 
 	if isJumping then
 		self.animationController:Play("Jumping")
-	elseif isFalling and not isLanded then
+	elseif isFalling then
 		local canLedgeGrab = self.tryLedgeGrab()
 
 		if canLedgeGrab then
@@ -43,23 +50,32 @@ function Falling:Update()
 			self.animationController:Stop("Jumping")
 			self.animationController:Play("Falling")
 		end
-	elseif isLanded then
-		self.animationController:Stop("Falling", 0.15)
-		self.onFinished()
 	end
 end
 
 function Falling:Exit()
 	self.animationController:Stop("Falling", 0.15)
 
-	self.connection:Disconnect()
-	self.connection = nil
+	if self.connection then
+		self.connection:Disconnect()
+		self.connection = nil
+	end
+
+	if self.stateChangedConnection then
+		self.stateChangedConnection:Disconnect()
+		self.stateChangedConnection = nil
+	end
 end
 
 function Falling:Destroy()
 	if self.connection then
 		self.connection:Disconnect()
 		self.connection = nil
+	end
+
+	if self.stateChangedConnection then
+		self.stateChangedConnection:Disconnect()
+		self.stateChangedConnection = nil
 	end
 
 	self.animationController:Stop("Jumping", 0)
