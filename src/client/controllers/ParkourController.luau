@@ -135,6 +135,10 @@ function ParkourController:RequestJump()
 		return
 	end
 
+	if self.state ~= "Walking" and self.state ~= "Sprinting" then
+		return
+	end
+
 	local canVault = self.states.Vaulting:Check()
 	if canVault then
 		self:TransitionTo("Vaulting")
