@@ -43,8 +43,6 @@ function Vaulting:Enter()
 	self.isActive = true
 	self.humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
 
-	self:CalculateVaultMovement()
-
 	self:CreateLinearVelocity()
 	self:CreateAlignOrientation()
 
@@ -68,18 +66,36 @@ function Vaulting:Update(dt)
 	end
 end
 
-function Vaulting:CalculateVaultMovement()
+function Vaulting:BuildMovementPlan()
 	local lookVec = self.rootPart.CFrame.LookVector
-	self.horizontalLookDir = Vector3.new(lookVec.X, 0, lookVec.Z).Unit
+	local horizontalLookDir = Vector3.new(lookVec.X, 0, lookVec.Z).Unit
 
 	local velocity = self.rootPart.AssemblyLinearVelocity
 	local horizontalVelocity = Vector3.new(velocity.X, 0, velocity.Z)
-	self.horizontalSpeed = horizontalVelocity.Magnitude * self.config.HorizontalSpeedMultiplier
 
-	self.verticalLookDir = Vector3.yAxis
-	self.verticalSpeed = self.config.InitialVerticalSpeed * self.config.HorizontalSpeedMultiplier
+	local forwardSpeed = horizontalVelocity:Dot(horizontalLookDir)
+	forwardSpeed = forwardSpeed < 0 and 0 or forwardSpeed * self.config.HorizontalSpeedMultiplier
 
-	self.verticalAcceleration = self.config.VerticalAcceleration * self.config.VerticalSpeedMultiplier
+	local horizontalSpeed = math.max(forwardSpeed, self.config.MinHorizontalSpeed)
+
+	local verticalLookDir = Vector3.yAxis
+
+	local verticalSpeed = self.config.InitialVerticalSpeed * self.config.VerticalSpeedMultiplier
+
+	local verticalAcceleration = self.config.VerticalAcceleration * self.config.VerticalSpeedMultiplier
+
+	local duration = (verticalSpeed - self.config.FinishVerticalSpeed) / verticalAcceleration
+	local distance = duration * horizontalSpeed
+
+	return {
+		horizontalLookDir = horizontalLookDir,
+		horizontalSpeed = horizontalSpeed,
+		verticalLookDir = verticalLookDir,
+		verticalSpeed = verticalSpeed,
+		verticalAcceleration = verticalAcceleration,
+		duration = duration,
+		distance = distance,
+	}
 end
 
 function Vaulting:CreateLinearVelocity()
@@ -108,12 +124,10 @@ function Vaulting:Check()
 	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
 	raycastParams.IgnoreWater = true
 
-	local lookVector = self.rootPart.CFrame.LookVector
-	local forward = Vector3.new(lookVector.X, 0, lookVector.Z).Unit
+	local movementPlan = self:BuildMovementPlan()
 
 	local context = {
-		lookVector = lookVector,
-		forward = forward,
+		forward = movementPlan.horizontalLookDir,
 		raycastParams = raycastParams,
 	}
 
@@ -150,6 +164,12 @@ function Vaulting:Check()
 	if topSurfaceResult.Position.Y - groundResult.Position.Y > self.config.MaxHeight then
 		return false
 	end
+
+	self.horizontalLookDir = movementPlan.horizontalLookDir
+	self.horizontalSpeed = movementPlan.horizontalSpeed
+	self.verticalLookDir = movementPlan.verticalLookDir
+	self.verticalSpeed = movementPlan.verticalSpeed
+	self.verticalAcceleration = movementPlan.verticalAcceleration
 
 	return true
 end
@@ -210,6 +230,11 @@ function Vaulting:Exit()
 
 	self.isActive = false
 	self.humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
+
+	self.horizontalLookDir = nil
+	self.horizontalSpeed = nil
+	self.verticalLookDir = nil
+	self.verticalSpeed = nil
 
 	self.animationController:Stop("Vaulting", 0.05)
 end

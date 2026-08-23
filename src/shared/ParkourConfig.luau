@@ -17,8 +17,10 @@ return {
 	Vaulting = {
 		CheckDistance = 4,
 		MaxHeight = 4,
-		HorizontalSpeedMultiplier = 1.3,
+		HorizontalSpeedMultiplier = 1,
 		VerticalSpeedMultiplier = 1,
+
+		MinHorizontalSpeed = 20,
 
 		TopClearanceHeight = 2.5,
 		TopProbeInset = 0.05,
