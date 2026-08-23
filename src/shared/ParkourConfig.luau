@@ -25,10 +25,12 @@ return {
 		TopClearanceHeight = 2.5,
 		TopProbeInset = 0.05,
 
-		ClearanceDistance = 6,
-		ClearanceCheckLength = 2,
+		Clearance = Vector3.new(2, 4, 1),
+		ClearanceSurfaceOffset = 0.1,
 
-		LandingCheckDistance = 5,
+		LandingCheckSize = Vector3.new(2, 5, 3),
+		LandingSurfaceOffset = 0.1,
+
 		GroundCheckDistance = 5,
 
 		InitialVerticalSpeed = 12,

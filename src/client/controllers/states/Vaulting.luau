@@ -124,11 +124,19 @@ function Vaulting:Check()
 	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
 	raycastParams.IgnoreWater = true
 
+	local overlapParams = OverlapParams.new()
+	overlapParams.FilterDescendantsInstances = { self.character }
+	overlapParams.RespectCanCollide = true
+	overlapParams.MaxParts = 1
+	overlapParams.FilterType = Enum.RaycastFilterType.Exclude
+
 	local movementPlan = self:BuildMovementPlan()
 
 	local context = {
+		movementPlan = movementPlan,
 		forward = movementPlan.horizontalLookDir,
 		raycastParams = raycastParams,
+		overlapParams = overlapParams,
 	}
 
 	local groundResult = self:FindGround(context)
@@ -146,22 +154,22 @@ function Vaulting:Check()
 		return false
 	end
 
-	local topSurfaceResult = self:FindTopSurface(frontFaceResult, context)
-	if not topSurfaceResult then
+	local topFaceResult = self:FindTopSurface(frontFaceResult, context)
+	if not topFaceResult then
 		return false
 	end
 
-	local clearanceResult = self:HasClearance(frontFaceResult, context)
+	local clearanceResult = self:HasVaultClearance(topFaceResult, context)
 	if not clearanceResult then
 		return false
 	end
 
-	local landingSurfaceResult = self:FindLandingSurface(frontFaceResult, context)
-	if not landingSurfaceResult then
+	local hasValidLandingArea = self:HasValidLandingArea(groundResult, topFaceResult, context)
+	if not hasValidLandingArea then
 		return false
 	end
 
-	if topSurfaceResult.Position.Y - groundResult.Position.Y > self.config.MaxHeight then
+	if topFaceResult.Position.Y - groundResult.Position.Y > self.config.MaxHeight then
 		return false
 	end
 
@@ -192,7 +200,7 @@ function Vaulting:FindGround(context)
 	local rayOrigin = self.rootPart.Position
 	local rayDirection = Vector3.new(0, -1, 0)
 
-	return game.Workspace:Raycast(rayOrigin, rayDirection * 5, context.raycastParams)
+	return game.Workspace:Raycast(rayOrigin, rayDirection * self.config.GroundCheckDistance, context.raycastParams)
 end
 
 function Vaulting:FindTopSurface(result, context)
@@ -204,18 +212,64 @@ function Vaulting:FindTopSurface(result, context)
 	return game.Workspace:Raycast(rayOrigin, rayDirection, context.raycastParams)
 end
 
-function Vaulting:HasClearance(result, context)
-	local rayOrigin = result.Position + context.forward * self.config.ClearanceDistance
-	local rayDirection = -context.forward
+function Vaulting:HasValidLandingArea(groundResult, topFaceResult, context)
+	local landingPosition = self.rootPart.Position + context.forward * context.movementPlan.distance
 
-	return not game.Workspace:Raycast(rayOrigin, rayDirection * self.config.ClearanceCheckLength, context.raycastParams)
+	local checkSize = self.config.LandingCheckSize
+	local offset = self.config.LandingSurfaceOffset
+
+	local obstacleHeight = topFaceResult.Position.Y - groundResult.Position.Y - offset * 2
+
+	if obstacleHeight > 0 then
+		local obstacleCheckCenter =
+			Vector3.new(landingPosition.X, groundResult.Position.Y + offset + obstacleHeight / 2, landingPosition.Z)
+
+		local obstacleCheckSize = Vector3.new(checkSize.X, obstacleHeight, checkSize.Z)
+
+		local obstacleParts = workspace:GetPartBoundsInBox(
+			CFrame.lookAt(obstacleCheckCenter, obstacleCheckCenter + context.forward),
+			obstacleCheckSize,
+			context.overlapParams
+		)
+
+		if #obstacleParts > 0 then
+			return false
+		end
+	end
+
+	local supportCenter = landingPosition - Vector3.yAxis * (checkSize.Y / 2)
+
+	local supportParts = workspace:GetPartBoundsInBox(
+		CFrame.lookAt(supportCenter, supportCenter + context.forward),
+		checkSize,
+		context.overlapParams
+	)
+
+	return #supportParts > 0
 end
 
-function Vaulting:FindLandingSurface(result, context)
-	local rayOrigin = result.Position + context.forward * self.config.LandingCheckDistance
-	local rayDirection = Vector3.new(0, -1, 0)
+function Vaulting:HasVaultClearance(result, context)
+	local endPosition = self.rootPart.Position + context.forward * context.movementPlan.distance
 
-	return game.Workspace:Raycast(rayOrigin, rayDirection * self.config.GroundCheckDistance, context.raycastParams)
+	local pathLength = (endPosition - result.Position):Dot(context.forward)
+	if pathLength <= 0 then
+		return false
+	end
+
+	local boxDepth = pathLength + self.config.Clearance.Z
+
+	local center = (endPosition + result.Position) / 2
+	local horizontalCenter = Vector3.new(center.X, 0, center.Z)
+
+	local centerY = result.Position.Y + self.config.ClearanceSurfaceOffset + self.config.Clearance.Y / 2
+
+	local boxCenter = Vector3.new(horizontalCenter.X, centerY, horizontalCenter.Z)
+	local boxCFrame = CFrame.lookAt(boxCenter, boxCenter + context.forward)
+	local boxSize = Vector3.new(self.config.Clearance.X, self.config.Clearance.Y, boxDepth)
+
+	local parts = workspace:GetPartBoundsInBox(boxCFrame, boxSize, context.overlapParams)
+
+	return #parts == 0
 end
 
 function Vaulting:Exit()
