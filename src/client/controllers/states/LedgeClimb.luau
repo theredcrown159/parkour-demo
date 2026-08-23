@@ -39,17 +39,25 @@ function LedgeClimb:Enter()
 
 	self.animationController:Play("LedgeClimb", self.config.AnimationFadeTime)
 
-	local runs = 0
+	local climbStage = "Lift"
+	local startTime = os.clock()
 
 	self.connection = RunService.PreSimulation:Connect(function()
+		if os.clock() - startTime > self.config.MaxDuration then
+			self.onFinished()
+			return
+		end
+
 		if (self.targetPosition - self.rootPart.Position).Magnitude < self.config.ArrivalDistance then
-			runs += 1
-			if runs >= self.config.RequiredArrivalFrames then
+			if climbStage == "Forward" then
 				self.onFinished()
 				return
 			end
+
 			self.targetPosition = (self.rootPart.CFrame * self.config.ForwardOffset).Position
 			self.alignPosition.Position = self.targetPosition
+
+			climbStage = "Forward"
 		end
 	end)
 end
@@ -101,14 +109,20 @@ function LedgeClimb:Check()
 end
 
 function LedgeClimb:Exit()
-	self.connection:Disconnect()
-	self.connection = nil
+	if self.connection then
+		self.connection:Disconnect()
+		self.connection = nil
+	end
 
-	self.alignOrientation:Destroy()
-	self.alignOrientation = nil
+	if self.alignOrientation then
+		self.alignOrientation:Destroy()
+		self.alignOrientation = nil
+	end
 
-	self.alignPosition:Destroy()
-	self.alignPosition = nil
+	if self.alignPosition then
+		self.alignPosition:Destroy()
+		self.alignPosition = nil
+	end
 
 	self.targetPosition = nil
 

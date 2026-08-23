@@ -61,11 +61,10 @@ return {
 
 		AnimationFadeTime = 0.15,
 		ArrivalDistance = 0.5,
-		RequiredArrivalFrames = 2,
 
-		LiftOffset = Vector3.new(0, 4, 0),
-		ForwardOffset = Vector3.new(0, 0.5, -2.5),
-		ClearanceOffset = Vector3.new(0, 4.5, -1.5),
+		LiftOffset = CFrame.new(0, 4, 0),
+		ForwardOffset = CFrame.new(0, 0.5, -2.5),
+		ClearanceOffset = CFrame.new(0, 4.5, -1.5),
 		ClearanceSize = Vector3.new(2, 3, 2),
 
 		ForceMultiplier = 1000,
