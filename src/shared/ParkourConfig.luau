@@ -22,6 +22,9 @@ return {
 
 		MinHorizontalSpeed = 20,
 
+		MaxFrontNormalY = 0.2,
+		MinTopNormalY = 0.7,
+
 		TopClearanceHeight = 2.5,
 		TopProbeInset = 0.05,
 

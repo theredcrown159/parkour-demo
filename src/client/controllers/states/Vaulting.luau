@@ -149,6 +149,10 @@ function Vaulting:Check()
 		return false
 	end
 
+	if math.abs(frontFaceResult.Normal.Y) > self.config.MaxFrontNormalY then
+		return false
+	end
+
 	local hasTopClearance = self:HasTopClearance(context)
 	if not hasTopClearance then
 		return false
@@ -156,6 +160,10 @@ function Vaulting:Check()
 
 	local topFaceResult = self:FindTopSurface(frontFaceResult, context)
 	if not topFaceResult then
+		return false
+	end
+
+	if topFaceResult.Normal.Y < self.config.MinTopNormalY then
 		return false
 	end
 
@@ -273,14 +281,20 @@ function Vaulting:HasVaultClearance(result, context)
 end
 
 function Vaulting:Exit()
-	self.connection:Disconnect()
-	self.connection = nil
+	if self.connection then
+		self.connection:Disconnect()
+		self.connection = nil
+	end
 
-	self.linearVelocity:Destroy()
-	self.linearVelocity = nil
+	if self.linearVelocity then
+		self.linearVelocity:Destroy()
+		self.linearVelocity = nil
+	end
 
-	self.alignOrientation:Destroy()
-	self.alignOrientation = nil
+	if self.alignOrientation then
+		self.alignOrientation:Destroy()
+		self.alignOrientation = nil
+	end
 
 	self.isActive = false
 	self.humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
@@ -289,6 +303,7 @@ function Vaulting:Exit()
 	self.horizontalSpeed = nil
 	self.verticalLookDir = nil
 	self.verticalSpeed = nil
+	self.verticalAcceleration = nil
 
 	self.animationController:Stop("Vaulting", 0.05)
 end
@@ -328,10 +343,9 @@ function Vaulting:Destroy()
 	self.horizontalSpeed = nil
 	self.verticalLookDir = nil
 	self.verticalSpeed = nil
+	self.verticalAcceleration = nil
 
 	self.animationController = nil
-
-	self.verticalAcceleration = nil
 
 	self.onFinished = nil
 end
