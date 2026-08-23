@@ -72,6 +72,7 @@ function ParkourController.new()
 
 	self.characterConnections = {}
 	self.humanoidStateConnection = nil
+	self.humanoidRunningConnection = nil
 
 	self.animationController = nil
 
@@ -98,17 +99,15 @@ function ParkourController:TransitionTo(state)
 end
 
 function ParkourController:UpdateState()
-	if self.state == "Sliding" then
-		return false
+	local isMoving = self.humanoid.MoveDirection.Magnitude > 0
+
+	if self.state == "Walking" and self.wantsSprint and isMoving then
+		return self:TransitionTo("Sprinting")
+	elseif self.state == "Sprinting" and (not self.wantsSprint or not isMoving) then
+		return self:TransitionTo("Walking")
 	end
 
-	if self.wantsSprint and self.state == "Walking" then
-		return self:TransitionTo("Sprinting")
-	elseif not self.wantsSprint and self.state == "Sprinting" then
-		return self:TransitionTo("Walking")
-	else
-		return false
-	end
+	return false
 end
 
 function ParkourController:SetSprintIntent(isSprinting)
@@ -149,7 +148,7 @@ function ParkourController:RequestJump()
 end
 
 function ParkourController:ReturnToLocomotion()
-	local nextState = self.wantsSprint and "Sprinting" or "Walking"
+	local nextState = (self.wantsSprint and self.humanoid.MoveDirection.Magnitude > 0) and "Sprinting" or "Walking"
 	return self:TransitionTo(nextState)
 end
 
@@ -204,6 +203,18 @@ function ParkourController:WatchFreefallState()
 	end)
 end
 
+function ParkourController:WatchRunningState()
+	local humanoid = self.humanoid
+
+	self.humanoidRunningConnection = humanoid.Running:Connect(function()
+		if humanoid ~= self.humanoid then
+			return
+		end
+
+		self:UpdateState()
+	end)
+end
+
 function ParkourController:SetCharacter(character)
 	if not character then
 		return
@@ -237,6 +248,7 @@ function ParkourController:SetCharacter(character)
 	self.states.Walking:Enter()
 
 	self:WatchFreefallState()
+	self:WatchRunningState()
 end
 
 function ParkourController:ClearCharacter(character)
@@ -247,6 +259,11 @@ function ParkourController:ClearCharacter(character)
 	if self.humanoidStateConnection then
 		self.humanoidStateConnection:Disconnect()
 		self.humanoidStateConnection = nil
+	end
+
+	if self.humanoidRunningConnection then
+		self.humanoidRunningConnection:Disconnect()
+		self.humanoidRunningConnection = nil
 	end
 
 	if self.states and self.state ~= "None" and self.states[self.state] then
