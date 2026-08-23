@@ -71,6 +71,7 @@ function ParkourController.new()
 	self.attachment = nil
 
 	self.characterConnections = {}
+	self.humanoidStateConnection = nil
 
 	self.animationController = nil
 
@@ -183,6 +184,22 @@ function ParkourController:CreateStates()
 	}
 end
 
+function ParkourController:WatchFreefallState()
+	local humanoid = self.humanoid
+
+	self.humanoidStateConnection = humanoid.StateChanged:Connect(function(_, newState)
+		if humanoid ~= self.humanoid then
+			return
+		end
+
+		if newState == Enum.HumanoidStateType.Freefall then
+			if self.state == "Walking" or self.state == "Sprinting" then
+				self:TransitionTo("Falling")
+			end
+		end
+	end)
+end
+
 function ParkourController:SetCharacter(character)
 	if not character then
 		return
@@ -214,11 +231,18 @@ function ParkourController:SetCharacter(character)
 
 	self.state = "Walking"
 	self.states.Walking:Enter()
+
+	self:WatchFreefallState()
 end
 
 function ParkourController:ClearCharacter(character)
 	if self.character ~= character then
 		return
+	end
+
+	if self.humanoidStateConnection then
+		self.humanoidStateConnection:Disconnect()
+		self.humanoidStateConnection = nil
 	end
 
 	if self.states and self.state ~= "None" and self.states[self.state] then
