@@ -124,9 +124,13 @@ function ParkourController:RequestJump()
 		return
 	end
 
-	local canLedgeClimb = self.states.LedgeClimb:Check()
-	if self.state == "LedgeGrab" and canLedgeClimb then
-		self:TransitionTo("LedgeClimb")
+	if self.state == "LedgeGrab" then
+		local canLedgeClimb = self.states.LedgeClimb:Check()
+		if canLedgeClimb then
+			self:TransitionTo("LedgeClimb")
+		else
+			self:TransitionTo("Falling")
+		end
 		return
 	end
 
@@ -174,7 +178,7 @@ function ParkourController:CreateStates()
 		Sliding = SlidingState.new(characterContext, returnToLocomotion, ParkourConfig.Sliding),
 		Vaulting = VaultingState.new(characterContext, returnToLocomotion, ParkourConfig.Vaulting),
 		LedgeGrab = LedgeGrabState.new(characterContext, ParkourConfig.LedgeGrab),
-		LedgeClimb = LedgeClimbState.new(characterContext, returnToLocomotion),
+		LedgeClimb = LedgeClimbState.new(characterContext, returnToLocomotion, ParkourConfig.LedgeClimb),
 		Falling = FallingState.new(characterContext, returnToLocomotion, tryLedgeGrab),
 	}
 end
