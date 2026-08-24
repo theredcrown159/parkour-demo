@@ -14,9 +14,6 @@ local LedgeClimbState = require(States:WaitForChild("LedgeClimb"))
 local AnimationController = require(script.Parent:WaitForChild("AnimationController"))
 
 local ALLOWED_TRANSITIONS = {
-	None = {
-		Walking = true,
-	},
 	Falling = {
 		Walking = true,
 		Sprinting = true,
