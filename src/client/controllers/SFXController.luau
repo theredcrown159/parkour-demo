@@ -41,6 +41,7 @@ function SFXController:CreateSounds()
 			sound.Looped = looped
 			sound.RollOffMinDistance = rollOffMinDistance
 			sound.RollOffMaxDistance = rollOffMaxDistance
+			sound.Parent = self.rootPart
 
 			self.sounds[soundName][variantIndex] = sound
 		end
@@ -76,22 +77,16 @@ function SFXController:SelectVariant(soundName)
 end
 
 function SFXController:Play(soundName)
-	local soundSource = self:SelectVariant(soundName)
+	local sound = self:SelectVariant(soundName)
 
-	if not soundSource then
+	if not sound then
 		return false
 	end
 
-	local sound = soundSource:Clone()
 	local playbackSpeedRange = self.config.Sounds[soundName].PlaybackSpeedRange
 	sound.PlaybackSpeed = self.random:NextNumber(playbackSpeedRange.Min, playbackSpeedRange.Max)
-	sound.Parent = self.rootPart
 
-	if not sound.Looped then
-		sound.Ended:Once(function()
-			sound:Destroy()
-		end)
-	else
+	if sound.Looped then
 		self:StopLoop(soundName)
 		self.activeLoops[soundName] = sound
 	end
@@ -109,7 +104,6 @@ function SFXController:StopLoop(soundName)
 	end
 
 	activeLoop:Stop()
-	activeLoop:Destroy()
 
 	self.activeLoops[soundName] = nil
 
