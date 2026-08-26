@@ -14,40 +14,33 @@ return {
 			PlaybackSpeedRange = NumberRange.new(0.95, 1.05),
 			Cooldown = 0.25,
 		},
-		SlidingStart = {
+		Sliding = {
 			SoundIds = {
-				"rbxassetid://123178970726423",
+				"rbxassetid://138269837525273",
+				"rbxassetid://134781979035978",
+				"rbxassetid://9119197706",
 			},
-			Volume = 0.6,
+			Volume = 0.4,
 			Looped = false,
-			PlaybackSpeedRange = NumberRange.new(0.95, 1.05),
-			Cooldown = 0.5,
-		},
-		SlidingLoop = {
-			SoundIds = {
-				"rbxassetid://18952286141",
-			},
-			Volume = 0.35,
-			Looped = true,
-			PlaybackSpeedRange = NumberRange.new(0.98, 1.02),
+			PlaybackSpeedRange = NumberRange.new(1.05, 1.1),
 			Cooldown = 0.5,
 		},
 		LedgeGrab = {
 			SoundIds = {
-				"rbxassetid://129550476573048",
-				"rbxassetid://129947985755935",
-				"rbxassetid://82817615606088",
+				"rbxassetid://136001697249474",
+				"rbxassetid://91831872689971",
+				"rbxassetid://87833032497218",
 			},
-			Volume = 0.7,
+			Volume = 0.3,
 			Looped = false,
-			PlaybackSpeedRange = NumberRange.new(0.95, 1.05),
+			PlaybackSpeedRange = NumberRange.new(1.5, 1.6),
 			Cooldown = 0.4,
 		},
 		LedgeClimb = {
 			SoundIds = {
 				"rbxassetid://107947199422599",
 			},
-			Volume = 0.55,
+			Volume = 0.4,
 			Looped = false,
 			PlaybackSpeedRange = NumberRange.new(0.95, 1.05),
 			Cooldown = 0.4,
