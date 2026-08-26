@@ -1,3 +1,4 @@
+local ContentProvider = game:GetService("ContentProvider")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local SFXConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("SFXConfig"))
@@ -19,6 +20,7 @@ function SFXController.new(rootPart)
 	self.random = Random.new()
 
 	self:CreateSounds()
+	self:PreloadSounds()
 
 	return self
 end
@@ -112,6 +114,30 @@ function SFXController:StopLoop(soundName)
 	self.activeLoops[soundName] = nil
 
 	return true
+end
+
+function SFXController:PreloadSounds()
+	local soundsToPreload = {}
+
+	for _, variants in pairs(self.sounds) do
+		for _, sound in ipairs(variants) do
+			table.insert(soundsToPreload, sound)
+		end
+	end
+
+	if #soundsToPreload == 0 then
+		return true
+	end
+
+	local success, errorMessage = pcall(function()
+		ContentProvider:PreloadAsync(soundsToPreload)
+	end)
+
+	if not success then
+		warn(errorMessage)
+	end
+
+	return success
 end
 
 function SFXController:Destroy()
