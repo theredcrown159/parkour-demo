@@ -27,6 +27,7 @@ function Vaulting.new(context, returnToLocomotion, config)
 	self.verticalSpeed = nil
 
 	self.animationController = context.animationController
+	self.sfxController = context.sfxController
 
 	self.verticalAcceleration = nil
 
@@ -47,6 +48,7 @@ function Vaulting:Enter()
 	self:CreateAlignOrientation()
 
 	self.animationController:Play("Vaulting", 0.05)
+	self.sfxController:Play("Vaulting")
 
 	local connection = RunService.PreSimulation:Connect(function(dt)
 		self:Update(dt)
@@ -346,6 +348,7 @@ function Vaulting:Destroy()
 	self.verticalAcceleration = nil
 
 	self.animationController = nil
+	self.sfxController = nil
 
 	self.onFinished = nil
 end

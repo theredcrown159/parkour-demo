@@ -12,6 +12,7 @@ local LedgeGrabState = require(States:WaitForChild("LedgeGrab"))
 local LedgeClimbState = require(States:WaitForChild("LedgeClimb"))
 
 local AnimationController = require(script.Parent:WaitForChild("AnimationController"))
+local SFXController = require(script.Parent:WaitForChild("SFXController"))
 
 local ALLOWED_TRANSITIONS = {
 	Falling = {
@@ -72,6 +73,7 @@ function ParkourController.new()
 	self.humanoidRunningConnection = nil
 
 	self.animationController = nil
+	self.sfxController = nil
 
 	self.started = false
 
@@ -163,6 +165,7 @@ function ParkourController:CreateStates()
 		rootPart = self.rootPart,
 		attachment = self.attachment,
 		animationController = self.animationController,
+		sfxController = self.sfxController,
 	}
 
 	local returnToLocomotion = function()
@@ -234,9 +237,17 @@ function ParkourController:SetCharacter(character)
 		return
 	end
 
+	local sfxController = SFXController.new(rootPart)
+
+	if self.character ~= character then
+		sfxController:Destroy()
+		return
+	end
+
 	self.rootPart = rootPart
 	self.humanoid = humanoid
 	self.animationController = animationController
+	self.sfxController = sfxController
 
 	self:CreateAttachment()
 	self:CreateStates()
@@ -283,6 +294,11 @@ function ParkourController:ClearCharacter(character)
 	if self.animationController then
 		self.animationController:Destroy()
 		self.animationController = nil
+	end
+
+	if self.sfxController then
+		self.sfxController:Destroy()
+		self.sfxController = nil
 	end
 
 	self.character = nil
