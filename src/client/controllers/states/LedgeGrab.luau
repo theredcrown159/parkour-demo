@@ -16,7 +16,9 @@ function LedgeGrab.new(context, config)
 	self.humanoid = context.humanoid
 	self.rootPart = context.rootPart
 	self.attachment = context.attachment
+
 	self.animationController = context.animationController
+	self.sfxController = context.sfxController
 
 	self.lastUseTime = 0
 
@@ -92,6 +94,8 @@ function LedgeGrab:FindTopSurface(raycastParams, frontFace, horizontalFrontNorma
 end
 
 function LedgeGrab:Enter()
+	self.sfxController:Play("LedgeGrab")
+
 	self:CreateAlignPosition()
 	self:CreateAlignOrientation()
 
@@ -154,7 +158,9 @@ function LedgeGrab:Destroy()
 	self.humanoid = nil
 	self.rootPart = nil
 	self.attachment = nil
+
 	self.animationController = nil
+	self.sfxController = nil
 
 	self.lastUseTime = nil
 

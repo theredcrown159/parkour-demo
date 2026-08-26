@@ -28,6 +28,7 @@ function Sliding.new(context, returnToLocomotion, config)
 	self.connection = nil
 
 	self.animationController = context.animationController
+	self.sfxController = context.sfxController
 
 	self.isActive = false
 
@@ -67,6 +68,7 @@ function Sliding:Enter()
 	self:CalculateSlideMovement()
 
 	self.animationController:Play("Sliding", 0.08)
+	self.sfxController:Play("Sliding")
 
 	self.connection = RunService.PreSimulation:Connect(function(dt)
 		self:Update(dt)
@@ -132,6 +134,7 @@ function Sliding:Destroy()
 	self.onFinished = nil
 
 	self.animationController = nil
+	self.sfxController = nil
 end
 
 return Sliding

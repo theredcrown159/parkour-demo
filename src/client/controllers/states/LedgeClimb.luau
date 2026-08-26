@@ -27,6 +27,7 @@ function LedgeClimb.new(context, returnToLocomotion, config)
 	self.connection = nil
 
 	self.animationController = context.animationController
+	self.sfxController = context.sfxController
 
 	self.config = config
 
@@ -38,6 +39,7 @@ function LedgeClimb:Enter()
 	self:CreateAlignOrientation()
 
 	self.animationController:Play("LedgeClimb", self.config.AnimationFadeTime)
+	self.sfxController:Play("LedgeClimb")
 
 	local climbStage = "Lift"
 	local startTime = os.clock()
@@ -158,6 +160,7 @@ function LedgeClimb:Destroy()
 	self.onFinished = nil
 
 	self.animationController = nil
+	self.sfxController = nil
 
 	self.config = nil
 end
