@@ -38,7 +38,9 @@ return {
 		},
 		LedgeClimb = {
 			SoundIds = {
-				"rbxassetid://107947199422599",
+				"rbxassetid://133381787950915",
+				"rbxassetid://99382296692845",
+				"rbxassetid://73880574811944",
 			},
 			Volume = 0.4,
 			Looped = false,
@@ -56,6 +58,18 @@ return {
 			Looped = false,
 			PlaybackSpeedRange = NumberRange.new(0.95, 1.05),
 			Cooldown = 0.2,
+		},
+		Footstep = {
+			SoundIds = {
+				"rbxassetid://87061775498714",
+				"rbxassetid://139267724392327",
+				"rbxassetid://112240321395589",
+				"rbxassetid://135712042029119",
+				"rbxassetid://81623756670923",
+			},
+			Volume = 0.3,
+			Looped = false,
+			PlaybackSpeedRange = NumberRange.new(1.05, 1.1),
 		},
 	},
 }

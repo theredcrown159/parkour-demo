@@ -57,6 +57,18 @@ function AnimationController:Stop(name, fade)
 	end
 end
 
+function AnimationController:GetAnimationMarkerSignal(animationName, markerName)
+	local track = self.tracks[animationName]
+
+	if not track then
+		return nil
+	end
+
+	local markerReachedSignal = track:GetMarkerReachedSignal(markerName)
+
+	return markerReachedSignal
+end
+
 function AnimationController:Destroy()
 	for _, track in pairs(self.tracks) do
 		if track.IsPlaying then

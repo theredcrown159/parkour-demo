@@ -9,11 +9,13 @@ function Walking.new(context, config)
 	self.humanoid = context.humanoid
 	self.config = config
 
-	self.currentState = nil
+	self.currentAnimation = nil
 
-	self.connection = nil
+	self.updateConnection = nil
+	self.footstepConnection = nil
 
 	self.animationController = context.animationController
+	self.sfxController = context.sfxController
 
 	return self
 end
@@ -21,44 +23,65 @@ end
 function Walking:Enter()
 	self.humanoid.WalkSpeed = self.config.Speed
 
-	self.connection = RunService.PreSimulation:Connect(function()
+	self.updateConnection = RunService.PreSimulation:Connect(function()
 		self:Update()
 	end)
+
+	local footstepSignal = self.animationController:GetAnimationMarkerSignal("Walking", "Footstep")
+
+	if footstepSignal then
+		self.footstepConnection = footstepSignal:Connect(function()
+			self.sfxController:Play("Footstep")
+		end)
+	end
 end
 
 function Walking:Update()
-	local nextState = self.humanoid.MoveDirection.Magnitude > 0 and "Walking" or "Idle"
-	if nextState ~= self.currentState then
-		self.animationController:Stop(self.currentState, 0.15)
-		self.animationController:Play(nextState, 0.15)
+	local nextAnimation = self.humanoid.MoveDirection.Magnitude > 0 and "Walking" or "Idle"
+	if nextAnimation ~= self.currentAnimation then
+		self.animationController:Stop(self.currentAnimation, 0.15)
+		self.animationController:Play(nextAnimation, 0.15)
 
-		self.currentState = nextState
+		self.currentAnimation = nextAnimation
 	end
 end
 
 function Walking:Exit()
-	self.connection:Disconnect()
-	self.connection = nil
+	if self.updateConnection then
+		self.updateConnection:Disconnect()
+		self.updateConnection = nil
+	end
 
-	self.animationController:Stop(self.currentState, 0.15)
+	if self.footstepConnection then
+		self.footstepConnection:Disconnect()
+		self.footstepConnection = nil
+	end
 
-	self.currentState = nil
+	self.animationController:Stop(self.currentAnimation, 0.15)
+
+	self.currentAnimation = nil
 end
 
 function Walking:Destroy()
-	if self.connection then
-		self.connection:Disconnect()
-		self.connection = nil
+	if self.updateConnection then
+		self.updateConnection:Disconnect()
+		self.updateConnection = nil
 	end
 
-	self.animationController:Stop(self.currentState, 0)
+	if self.footstepConnection then
+		self.footstepConnection:Disconnect()
+		self.footstepConnection = nil
+	end
+
+	self.animationController:Stop(self.currentAnimation, 0)
 
 	self.humanoid = nil
 	self.config = nil
 
-	self.currentState = nil
+	self.currentAnimation = nil
 
 	self.animationController = nil
+	self.sfxController = nil
 end
 
 return Walking
