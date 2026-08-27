@@ -143,7 +143,11 @@ function ParkourController:RequestJump()
 		return
 	end
 
-	self:TransitionTo("Falling")
+	local transitioned = self:TransitionTo("Falling")
+
+	if transitioned then
+		self.sfxController:Play("Jumping")
+	end
 end
 
 function ParkourController:ReturnToLocomotion()

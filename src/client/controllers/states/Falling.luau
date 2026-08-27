@@ -12,6 +12,7 @@ function Falling.new(context, returnToLocomotion, tryLedgeGrab)
 	self.onFinished = returnToLocomotion
 
 	self.animationController = context.animationController
+	self.sfxController = context.sfxController
 
 	self.connection = nil
 
@@ -25,6 +26,7 @@ end
 function Falling:Enter()
 	self.stateChangedConnection = self.humanoid.StateChanged:Connect(function(_, newState)
 		if newState == Enum.HumanoidStateType.Landed then
+			self.sfxController:Play("Landing")
 			self.onFinished()
 		end
 	end)
@@ -87,6 +89,7 @@ function Falling:Destroy()
 	self.onFinished = nil
 
 	self.animationController = nil
+	self.sfxController = nil
 
 	self.tryLedgeGrab = nil
 end
