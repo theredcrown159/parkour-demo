@@ -13,6 +13,7 @@ local LedgeClimbState = require(States:WaitForChild("LedgeClimb"))
 
 local AnimationController = require(script.Parent:WaitForChild("AnimationController"))
 local SFXController = require(script.Parent:WaitForChild("SFXController"))
+local VFXController = require(script.Parent:WaitForChild("VFXController"))
 
 local ALLOWED_TRANSITIONS = {
 	Falling = {
@@ -74,6 +75,7 @@ function ParkourController.new()
 
 	self.animationController = nil
 	self.sfxController = nil
+	self.vfxController = nil
 
 	self.started = false
 
@@ -98,6 +100,10 @@ function ParkourController:TransitionTo(state)
 end
 
 function ParkourController:UpdateState()
+	if not self.humanoid then
+		return false
+	end
+
 	local isMoving = self.humanoid.MoveDirection.Magnitude > 0
 
 	if self.state == "Walking" and self.wantsSprint and isMoving then
@@ -170,6 +176,7 @@ function ParkourController:CreateStates()
 		attachment = self.attachment,
 		animationController = self.animationController,
 		sfxController = self.sfxController,
+		vfxController = self.vfxController,
 	}
 
 	local returnToLocomotion = function()
@@ -248,10 +255,18 @@ function ParkourController:SetCharacter(character)
 		return
 	end
 
+	local vfxController = VFXController.new(character, rootPart)
+
+	if self.character ~= character then
+		vfxController:Destroy()
+		return
+	end
+
 	self.rootPart = rootPart
 	self.humanoid = humanoid
 	self.animationController = animationController
 	self.sfxController = sfxController
+	self.vfxController = vfxController
 
 	self:CreateAttachment()
 	self:CreateStates()
@@ -303,6 +318,11 @@ function ParkourController:ClearCharacter(character)
 	if self.sfxController then
 		self.sfxController:Destroy()
 		self.sfxController = nil
+	end
+
+	if self.vfxController then
+		self.vfxController:Destroy()
+		self.vfxController = nil
 	end
 
 	self.character = nil
